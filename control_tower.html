@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ARL Control Tower - Akij Resource Limited</title>
+<title>ARL Inventory Control Tower - Akij Resource Limited</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
 :root{--bg:#060b14;--card:#0d1525;--card2:#131d33;--t1:#e2e8f0;--t2:#94a3b8;--t3:#4b5563;--teal:#0EA5A4;--gold:#FBBF24;--blue:#57C3FF;--purple:#9A91FB;--red:#EF4444;--green:#10B981;--orange:#FDB52A;--border:#1a2744}
@@ -61,7 +61,7 @@ tr:hover td{background:rgba(14,165,164,0.04)}
 </head>
 <body>
 <div class="topbar">
-  <div><h1>ARL CONTROL TOWER</h1><div class="sub">Akij Resource Limited | BASHIR ALAM (HOD) | Auto-refresh: 3 min</div></div>
+  <div><h1>ARL INVENTORY CONTROL TOWER</h1><div class="sub">Akij Resource Limited | BASHIR ALAM (HOD) | Auto-refresh: 3 min</div></div>
   <div style="display:flex;align-items:center;gap:20px">
     <div style="text-align:center"><span class="live-dot"></span> <span class="live-text">LIVE</span></div>
     <div style="text-align:center"><div class="refresh-timer" id="timer">03:00</div><div style="font-size:8px;color:var(--t3)">Next Refresh</div></div>
@@ -84,7 +84,7 @@ tr:hover td{background:rgba(14,165,164,0.04)}
 </div>
 <div class="kpi-strip" id="kpiStrip"></div>
 <div class="main" id="grid"></div>
-<div class="footer">ARL CONTROL TOWER | Inventory Material Department (Demand & Supply) | Akij Resource Limited &copy; 2026</div>
+<div class="footer">ARL INVENTORY CONTROL TOWER | Inventory Material Department (Demand & Supply) | Akij Resource Limited &copy; 2026</div>
 <script>
 
 var D=[{s:"Akij Ispat Limited",v:4045700000,c:"Building"},{s:"Batayon Traders Ltd.",v:2475120733,c:"Trading"},{s:"Hashem Rice Mills Ltd.",v:1776210477,c:"Essential"},{s:"Akij Agro Feed Ltd.",v:1432316185,c:"FMCG"},{s:"Nobayon Traders Ltd.",v:1372218915,c:"Trading"},{s:"Akij Cement Company Ltd.",v:841237806,c:"Building"},{s:"Akij Light Engineering",v:475437972,c:"FMCG"},{s:"Akij Poly Fibre Industries",v:378122791,c:"Building"},{s:"M/S The Successors",v:256363772,c:"Building"},{s:"Fariq Agro Ltd.",v:249865077,c:"Essential"},{s:"Akij Ready Mix Concrete",v:174124166,c:"Building"},{s:"Akij Building Solutions",v:162033498,c:"Building"},{s:"Akij InfoTech Ltd.",v:126832355,c:"Trading"},{s:"AKIJ LifeCare Ltd.",v:953213840,c:"Healthcare"},{s:"Lineasia Trading",v:77258114,c:"Trading"},{s:"AKIJ Automobile",v:644178895,c:"Trading"},{s:"AKIJ Telecom",v:473305431,c:"Trading"},{s:"ARL Traders",v:40050336,c:"Trading"},{s:"Akij Breeders",v:357285602,c:"Poultry"},{s:"AKIJ Consumer Electronics",v:28894515,c:"Trading"},{s:"Blue Pill",v:17818580,c:"Trading"},{s:"Akij Resource",v:5349000,c:"Head Office"},{s:"Akij Electrofab",v:421705,c:"Trading"},{s:"Akij Shipping Line",v:293978,c:"Shipping"},{s:"Bongo Traders",v:-37250326,c:"Trading"},{s:"Daily Trading",v:-40305008,c:"Trading"},{s:"Asia One Trading",v:-47896691,c:"Trading"},{s:"Magnum Steel",v:-64507484,c:"Building"},{s:"Akij Commodities",v:-229703286,c:"Trading"},{s:"Direct Trading",v:-237392653,c:"Trading"},{s:"Eurasia Trading",v:-420802148,c:"Trading"},{s:"Akij Essentials",v:-29148960684037,c:"Essential"}];

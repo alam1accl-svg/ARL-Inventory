@@ -1,0 +1,13 @@
+{
+  "name": "arl-control-tower",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "ARL Inventory Control Tower - Akij Resource Limited",
+  "dependencies": {
+    "mssql": "^11.0.1",
+    "mcp-handler": "^2.1.1",
+    "@modelcontextprotocol/server": "^2.0.0",
+    "zod": "^4.4.3"
+  }
+}

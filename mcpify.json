@@ -1,0 +1,118 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ARL Inventory Control Tower API",
+    "description": "Live Akij Resource Limited inventory data: closing stock, PR pending, inventory aging, DIO & turnover ratio, and employee clearance pending. Source: DWH SQL Server.",
+    "version": "1.0.0",
+    "contact": { "name": "BASHIR ALAM", "organization": "Akij Resource Limited - Inventory Material Department" }
+  },
+  "servers": [
+    { "url": "https://arl-control-tower.vercel.app" }
+  ],
+  "paths": {
+    "/api/data": {
+      "get": {
+        "operationId": "getControlTowerData",
+        "summary": "Get live ARL Inventory Control Tower dashboard data",
+        "description": "Returns closing stock by SBU, top PR pending, inventory aging buckets, DIO & turnover ratios, and pending employee clearances from the DWH database.",
+        "tags": ["control-tower"],
+        "responses": {
+          "200": {
+            "description": "Success - control tower data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ControlTowerData" }
+              }
+            }
+          },
+          "500": {
+            "description": "Database connection or query error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "error": { "type": "string" } }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ControlTowerData": {
+        "type": "object",
+        "required": ["generatedAt", "stock", "pr", "aging", "dio", "clearance"],
+        "properties": {
+          "generatedAt": { "type": "string", "format": "date-time", "description": "When the data was generated" },
+          "stock": {
+            "type": "array",
+            "description": "Closing stock value per SBU (BDT)",
+            "items": {
+              "type": "object",
+              "properties": {
+                "s": { "type": "string", "description": "SBU / Business Unit name" },
+                "v": { "type": "number", "description": "Net stock value in BDT" },
+                "c": { "type": "string", "description": "Sector / category" }
+              }
+            }
+          },
+          "pr": {
+            "type": "array",
+            "description": "Top pending purchase requisitions by SBU",
+            "items": {
+              "type": "object",
+              "properties": {
+                "s": { "type": "string", "description": "SBU name" },
+                "q": { "type": "number", "description": "Pending quantity" },
+                "n": { "type": "integer", "description": "Number of PRs" },
+                "it": { "type": "integer", "description": "Number of distinct items" },
+                "d": { "type": "string", "format": "date", "description": "Last PR date" }
+              }
+            }
+          },
+          "aging": {
+            "type": "array",
+            "description": "Inventory aging analysis by SBU",
+            "items": {
+              "type": "object",
+              "properties": {
+                "s": { "type": "string", "description": "SBU name" },
+                "i": { "type": "string", "description": "Item / GL category" },
+                "v": { "type": "number", "description": "Stock value in BDT" },
+                "d": { "type": "integer", "description": "Days idle since last transaction" },
+                "c": { "type": "string", "enum": ["Fast-Moving", "Moving", "Slow-Moving", "Non-Moving", "Obsolete"] }
+              }
+            }
+          },
+          "dio": {
+            "type": "array",
+            "description": "DIO days and turnover ratio per SBU",
+            "items": {
+              "type": "object",
+              "properties": {
+                "s": { "type": "string", "description": "SBU name" },
+                "inv": { "type": "number", "description": "Inventory value in BDT" },
+                "cogs": { "type": "number", "description": "Cost of goods sold YTD in BDT" }
+              }
+            }
+          },
+          "clearance": {
+            "type": "array",
+            "description": "Pending employee clearances by company",
+            "items": {
+              "type": "object",
+              "properties": {
+                "s": { "type": "string", "description": "Company name" },
+                "c": { "type": "integer", "description": "Pending clearance count" },
+                "sal": { "type": "number", "description": "Total last-month salary in BDT" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

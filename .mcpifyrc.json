@@ -1,0 +1,13 @@
+{
+  "spec": "mcpify.json",
+  "name": "arl-inventory-control-tower",
+  "transport": "stdio",
+  "baseUrl": "https://arl-control-tower.vercel.app",
+  "naming": "camelCase",
+  "maxResponseSize": 500,
+  "cacheTtl": 300,
+  "cacheMax": 50,
+  "retry": 2,
+  "retryDelay": 500,
+  "retryMaxDelay": 5000
+}

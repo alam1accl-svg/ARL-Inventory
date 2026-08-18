@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ARL Control Tower - Akij Resource Limited</title>
+<title>ARL Inventory Control Tower - Akij Resource Limited</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
 :root{--bg:#060b14;--card:#0d1525;--card2:#131d33;--t1:#e2e8f0;--t2:#94a3b8;--t3:#4b5563;--teal:#0EA5A4;--gold:#FBBF24;--blue:#57C3FF;--purple:#9A91FB;--red:#EF4444;--green:#10B981;--orange:#FDB52A;--border:#1a2744}
@@ -12,7 +12,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
 .topbar{background:linear-gradient(180deg,#0d1525,#060b14);border-bottom:2px solid var(--teal);padding:10px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:8px}
 .topbar h1{font-size:20px;font-weight:900;background:linear-gradient(135deg,var(--teal),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.topbar .sub{font-size:10px;color:var(--t3)}
+.topbar .sub{font-size:10px;color:var(--blue);font-weight:700;letter-spacing:0.5px}
 .live-dot{width:10px;height:10px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite;display:inline-block}
 .live-text{font-size:10px;color:var(--green);font-weight:700}
 .btn{background:var(--card2);border:1px solid var(--border);color:var(--t2);padding:6px 12px;border-radius:5px;font-size:10px;cursor:pointer;transition:all 0.2s;text-decoration:none;white-space:nowrap}
@@ -61,7 +61,7 @@ tr:hover td{background:rgba(14,165,164,0.04)}
 </head>
 <body>
 <div class="topbar">
-  <div><h1>ARL CONTROL TOWER</h1><div class="sub">Akij Resource Limited | BASHIR ALAM (HOD) | Live MCP DWH Data</div></div>
+  <div><h1>ARL INVENTORY CONTROL TOWER</h1><div class="sub">Akij Resource Limited | BASHIR ALAM (HOD) | Live MCP DWH Data</div></div>
   <div style="display:flex;align-items:center;gap:14px">
     <div style="text-align:center"><span class="live-dot"></span> <span class="live-text">LIVE</span></div>
     <div style="font-size:9px;color:var(--t3)">Last: <span id="lastUpdate" style="color:var(--teal)">--</span></div>
@@ -74,18 +74,24 @@ tr:hover td{background:rgba(14,165,164,0.04)}
 <div class="tabs" id="tabs"></div>
 <div class="kpi-strip" id="kpiStrip"></div>
 <div class="main" id="grid"></div>
-<div class="footer">ARL CONTROL TOWER | Inventory Material Department (Demand & Supply) | Akij Resource Limited &copy; 2026 | Source: DWH MCP SQL Server</div>
+<div class="footer">ARL INVENTORY CONTROL TOWER | Inventory Material Department (Demand & Supply) | Akij Resource Limited &copy; 2026 | Source: DWH MCP SQL Server</div>
 <script>
 
-var D=[{s:"Akij Ispat Limited",v:3977004119,c:"Building"},{s:"Batayon Traders Ltd.",v:2475120733,c:"Trading"},{s:"Hashem Rice Mills Ltd.",v:1696324200,c:"Essential"},{s:"Akij Agro Feed Ltd.",v:1442015164,c:"FMCG"},{s:"Nobayon Traders Ltd.",v:1357283125,c:"Trading"},{s:"Akij Cement Company Ltd.",v:734171870,c:"Building"},{s:"Akij Light Engineering Limited",v:455965306,c:"FMCG"},{s:"Akij Poly Fibre Industries Ltd.",v:391068210,c:"Building"},{s:"Fariq Agro Ltd.",v:260444793,c:"Essential"},{s:"M/S The Successors",v:256363772,c:"Building"},{s:"Akij Ready Mix Concrete Ltd",v:183253284,c:"Building"},{s:"Akij Building Solutions Limited",v:165131514,c:"Building"},{s:"Akij InfoTech Ltd.",v:126655454,c:"Trading"},{s:"AKIJ LifeCare Ltd.",v:82525097,c:"Healthcare"},{s:"Lineasia Trading Co. Ltd.",v:77258114,c:"Trading"},{s:"AKIJ Automobile Industries Ltd.",v:74628478,c:"Trading"},{s:"AKIJ Telecom Limited",v:45218893,c:"Trading"},{s:"ARL Traders Ltd.",v:40050336,c:"Trading"},{s:"Akij Breeders Limited",v:34405659,c:"Poultry"},{s:"AKIJ Consumer Electronics Limited",v:32991387,c:"Trading"},{s:"Blue Pill Limited",v:17934728,c:"Trading"},{s:"Akij Resource",v:5349000,c:"Head Office"},{s:"Akij Electrofab Limited",v:192518,c:"Trading"},{s:"Akij Shipping Line Ltd.",v:293950,c:"Shipping"},{s:"Asia One Trading Company Ltd",v:-47896691,c:"Trading"},{s:"Bongo Traders Ltd",v:-53521927,c:"Trading"},{s:"Daily Trading Company Ltd",v:-43713646,c:"Trading"},{s:"Magnum Steel Industries Limited",v:-69870519,c:"Building"},{s:"Direct Trading Company Ltd",v:-237392653,c:"Trading"},{s:"Akij Commodities Ltd.",v:-239332546,c:"Trading"},{s:"Eurasia Trading Company Ltd",v:-420802148,c:"Trading"},{s:"Akij Essentials Ltd.",v:-29149013847863,c:"Essential"}];
+var D=[],P=[],A=[],TO=[],CL=[];
 
-var P=[{s:"Kafil And Razzak Agro Ltd.",q:798595196,n:1292,it:2313,d:"2025-11-19"},{s:"Hashem Rice Mills Ltd.",q:326111706,n:3119,it:4033,d:"2026-08-13"},{s:"Akij Light Engineering Limited",q:266287619,n:2181,it:5469,d:"2026-08-18"},{s:"Akij Essentials Ltd.",q:213250832,n:9738,it:10286,d:"2026-08-18"},{s:"Akij Agro Feed Ltd.",q:194438338,n:4230,it:6519,d:"2026-08-18"},{s:"Daily Trading Company Ltd",q:62751456,n:184,it:156,d:"2026-08-18"},{s:"Akij Poly Fibre Industries Ltd.",q:60424159,n:3226,it:8525,d:"2026-08-16"},{s:"Akij Cement Company Ltd.",q:50606345,n:13571,it:16214,d:"2026-08-18"},{s:"Nobayon Traders Ltd.",q:45968406,n:69,it:69,d:"2026-08-06"},{s:"Akij Ready Mix Concrete Ltd",q:24421225,n:8984,it:8479,d:"2026-08-18"},{s:"Akij Commodities Ltd.",q:9004643,n:183,it:504,d:"2026-08-16"},{s:"Akij Building Solutions Limited",q:7512123,n:1805,it:2056,d:"2026-08-16"},{s:"Fariq Agro Ltd.",q:6396976,n:184,it:333,d:"2026-08-17"},{s:"M/S The Successors",q:6314366,n:433,it:725,d:"2026-07-29"},{s:"Magnum Steel Industries Limited",q:5824367,n:3840,it:6639,d:"2026-08-17"}];
+var FALLBACK={stock:[{s:"Akij Ispat Limited",v:3977004119,c:"Building"},{s:"Batayon Traders Ltd.",v:2475120733,c:"Trading"},{s:"Hashem Rice Mills Ltd.",v:1696324200,c:"Essential"},{s:"Akij Agro Feed Ltd.",v:1442015164,c:"FMCG"},{s:"Nobayon Traders Ltd.",v:1357283125,c:"Trading"},{s:"Akij Cement Company Ltd.",v:734171870,c:"Building"},{s:"Akij Light Engineering Limited",v:455965306,c:"FMCG"},{s:"Akij Poly Fibre Industries Ltd.",v:391068210,c:"Building"},{s:"Fariq Agro Ltd.",v:260444793,c:"Essential"},{s:"M/S The Successors",v:256363772,c:"Building"},{s:"Akij Ready Mix Concrete Ltd",v:183253284,c:"Building"},{s:"Akij Building Solutions Limited",v:165131514,c:"Building"},{s:"Akij InfoTech Ltd.",v:126655454,c:"Trading"},{s:"AKIJ LifeCare Ltd.",v:82525097,c:"Healthcare"},{s:"Lineasia Trading Co. Ltd.",v:77258114,c:"Trading"},{s:"AKIJ Automobile Industries Ltd.",v:74628478,c:"Trading"},{s:"AKIJ Telecom Limited",v:45218893,c:"Trading"},{s:"ARL Traders Ltd.",v:40050336,c:"Trading"},{s:"Akij Breeders Limited",v:34405659,c:"Poultry"},{s:"AKIJ Consumer Electronics Limited",v:32991387,c:"Trading"},{s:"Blue Pill Limited",v:17934728,c:"Trading"},{s:"Akij Resource",v:5349000,c:"Head Office"},{s:"Akij Electrofab Limited",v:192518,c:"Trading"},{s:"Akij Shipping Line Ltd.",v:293950,c:"Shipping"},{s:"Asia One Trading Company Ltd",v:-47896691,c:"Trading"},{s:"Bongo Traders Ltd",v:-53521927,c:"Trading"},{s:"Daily Trading Company Ltd",v:-43713646,c:"Trading"},{s:"Magnum Steel Industries Limited",v:-69870519,c:"Building"},{s:"Direct Trading Company Ltd",v:-237392653,c:"Trading"},{s:"Akij Commodities Ltd.",v:-239332546,c:"Trading"},{s:"Eurasia Trading Company Ltd",v:-420802148,c:"Trading"},{s:"Akij Essentials Ltd.",v:-29149013847863,c:"Essential"}],pr:[{s:"Kafil And Razzak Agro Ltd.",q:798595196,n:1292,it:2313,d:"2025-11-19"},{s:"Hashem Rice Mills Ltd.",q:326111706,n:3119,it:4033,d:"2026-08-13"},{s:"Akij Light Engineering Limited",q:266287619,n:2181,it:5469,d:"2026-08-18"},{s:"Akij Essentials Ltd.",q:213250832,n:9738,it:10286,d:"2026-08-18"},{s:"Akij Agro Feed Ltd.",q:194438338,n:4230,it:6519,d:"2026-08-18"},{s:"Daily Trading Company Ltd",q:62751456,n:184,it:156,d:"2026-08-18"},{s:"Akij Poly Fibre Industries Ltd.",q:60424159,n:3226,it:8525,d:"2026-08-16"},{s:"Akij Cement Company Ltd.",q:50606345,n:13571,it:16214,d:"2026-08-18"},{s:"Nobayon Traders Ltd.",q:45968406,n:69,it:69,d:"2026-08-06"},{s:"Akij Ready Mix Concrete Ltd",q:24421225,n:8984,it:8479,d:"2026-08-18"},{s:"Akij Commodities Ltd.",q:9004643,n:183,it:504,d:"2026-08-16"},{s:"Akij Building Solutions Limited",q:7512123,n:1805,it:2056,d:"2026-08-16"},{s:"Fariq Agro Ltd.",q:6396976,n:184,it:333,d:"2026-08-17"},{s:"M/S The Successors",q:6314366,n:433,it:725,d:"2026-07-29"},{s:"Magnum Steel Industries Limited",q:5824367,n:3840,it:6639,d:"2026-08-17"}],aging:[{s:"Batayon Traders Ltd.",i:"Inventory",v:2475120733,d:383,c:"Obsolete"},{s:"Lineasia Trading Co. Ltd.",i:"Inventory",v:77258114,d:378,c:"Obsolete"},{s:"Eurasia Trading Company Ltd",i:"Inventory",v:-420802148,d:210,c:"Non-Moving"},{s:"Direct Trading Company Ltd",i:"Inventory",v:-237392653,d:199,c:"Non-Moving"},{s:"ARL Traders Ltd.",i:"Inventory",v:40050336,d:107,c:"Slow-Moving"},{s:"Akij Resource",i:"Inventory",v:5349000,d:107,c:"Slow-Moving"},{s:"M/S The Successors",i:"Inventory",v:256363772,d:97,c:"Slow-Moving"}],dio:[{s:"Akij Ispat Limited",inv:447235999,cogs:7410620801},{s:"Akij Agro Feed Ltd.",inv:762916074,cogs:5237737386},{s:"Akij Cement Company Ltd.",inv:517951909,cogs:7081633090},{s:"Hashem Rice Mills Ltd.",inv:332484760,cogs:2858204312},{s:"Akij Light Engineering Limited",inv:293299777,cogs:654864874},{s:"M/S The Successors",inv:238461372,cogs:1166678},{s:"Nobayon Traders Ltd.",inv:77838124,cogs:2295375368},{s:"AKIJ Automobile Industries Ltd.",inv:68911629,cogs:148742958},{s:"AKIJ Consumer Electronics Limited",inv:32991387,cogs:42184755},{s:"AKIJ LifeCare Ltd.",inv:19173780,cogs:300204508},{s:"Fariq Agro Ltd.",inv:18195300,cogs:382792832},{s:"Blue Pill Limited",inv:12454287,cogs:87665089},{s:"Akij Poly Fibre Industries Ltd.",inv:12279064,cogs:835756987},{s:"Akij Breeders Limited",inv:7326314,cogs:58217531},{s:"AKIJ Telecom Limited",inv:1616463,cogs:35488037},{s:"Akij Electrofab Limited",inv:192518,cogs:10886015}],clearance:[{s:"Akij Cement Company Ltd.",c:449,sal:12165483},{s:"Akij Essentials Ltd.",c:202,sal:6818570},{s:"Akij Ispat Limited",c:129,sal:3990021},{s:"Akij Poly Fibre Industries Ltd.",c:101,sal:1862459},{s:"Akij Light Engineering Limited",c:98,sal:2286534},{s:"Akij Ready Mix Concrete Ltd",c:80,sal:1619485},{s:"Akij Resource",c:71,sal:6797564},{s:"Akij Agro Feed Ltd.",c:69,sal:2456482},{s:"Blue Pill Limited",c:50,sal:2266562},{s:"Hashem Rice Mills Ltd.",c:43,sal:939315},{s:"Akij Air Service Ltd.",c:33,sal:449398},{s:"AKIJ Telecom Limited",c:29,sal:872793},{s:"Bongo Traders Ltd",c:28,sal:658914},{s:"Akij Shipping Line Ltd.",c:21,sal:888487},{s:"Akij Building Solutions Limited",c:20,sal:747175},{s:"Akij Logistics Ltd.",c:19,sal:770259},{s:"Kafil And Razzak Agro Ltd.",c:16,sal:501203},{s:"AKIJ LifeCare Ltd.",c:15,sal:236920},{s:"Akij InfoTech Ltd.",c:15,sal:682800},{s:"Akij Shipping Lines Ltd.",c:13,sal:485366},{s:"Akij Broadcast Media Ltd.",c:12,sal:555912},{s:"M/S The Successors",c:12,sal:231961},{s:"Fariq Agro Ltd.",c:9,sal:199134},{s:"Akij Commodities Ltd.",c:8,sal:265761},{s:"Akij Mediplex Limited",c:7,sal:230569},{s:"Nobayon Traders Ltd.",c:5,sal:312960},{s:"Magnum Steel Industries Limited",c:5,sal:48910},{s:"iBOS Limited",c:4,sal:1003}]};
 
-var A=[{s:"Batayon Traders Ltd.",i:"Trading Goods",v:2475120733,d:383,c:"Obsolete"},{s:"Lineasia Trading Co. Ltd.",i:"Trading Goods",v:77258114,d:378,c:"Obsolete"},{s:"Akij Landmark Limited",i:"Inventory",v:0,d:276,c:"Non-Moving"},{s:"Eurasia Trading Company Ltd",i:"Trading Goods",v:-420802148,d:210,c:"Non-Moving"},{s:"Asia One Trading Company Ltd",i:"Trading Goods",v:-47896691,d:210,c:"Non-Moving"},{s:"Direct Trading Company Ltd",i:"Trading Goods",v:-237392653,d:199,c:"Non-Moving"},{s:"ARL Traders Ltd.",i:"Trading Goods",v:40050336,d:107,c:"Slow-Moving"},{s:"Akij Resource",i:"Trading Goods",v:5349000,d:107,c:"Slow-Moving"},{s:"M/S The Successors",i:"Raw Materials",v:256363772,d:97,c:"Slow-Moving"}];
+function loadData(d){
+if(d.stock&&d.stock.length){D=d.stock.map(function(x){return{s:x.s,v:x.v,c:"SBU"}})}
+if(d.pr&&d.pr.length){P=d.pr}
+if(d.aging&&d.aging.length){A=d.aging.map(function(x){return{s:x.s,i:"Inventory",v:x.v,d:x.d,c:x.c}})}
+if(d.dio&&d.dio.length){TO=d.dio.map(function(x){return{s:x.s,inv:x.inv,cogs:x.cogs}})}
+if(d.clearance&&d.clearance.length){CL=d.clearance}
+}
 
-var TO=[{s:"Akij Ispat Limited",inv:447235999,cogs:7410620801},{s:"Akij Agro Feed Ltd.",inv:762916074,cogs:5237737386},{s:"Akij Cement Company Ltd.",inv:517951909,cogs:7081633090},{s:"Hashem Rice Mills Ltd.",inv:332484760,cogs:2858204312},{s:"Akij Light Engineering Limited",inv:293299777,cogs:654864874},{s:"M/S The Successors",inv:238461372,cogs:1166678},{s:"Nobayon Traders Ltd.",inv:77838124,cogs:2295375368},{s:"AKIJ Automobile Industries Ltd.",inv:68911629,cogs:148742958},{s:"AKIJ Consumer Electronics Limited",inv:32991387,cogs:42184755},{s:"AKIJ LifeCare Ltd.",inv:19173780,cogs:300204508},{s:"Fariq Agro Ltd.",inv:18195300,cogs:382792832},{s:"Blue Pill Limited",inv:12454287,cogs:87665089},{s:"Akij Poly Fibre Industries Ltd.",inv:12279064,cogs:835756987},{s:"Akij Breeders Limited",inv:7326314,cogs:58217531},{s:"AKIJ Telecom Limited",inv:1616463,cogs:35488037},{s:"Akij Electrofab Limited",inv:192518,cogs:10886015}];
-
-var CL=[{s:"Akij Cement Company Ltd.",c:449,sal:12165483},{s:"Akij Essentials Ltd.",c:202,sal:6818570},{s:"Akij Ispat Limited",c:129,sal:3990021},{s:"Akij Poly Fibre Industries Ltd.",c:101,sal:1862459},{s:"Akij Light Engineering Limited",c:98,sal:2286534},{s:"Akij Ready Mix Concrete Ltd",c:80,sal:1619485},{s:"Akij Resource",c:71,sal:6797564},{s:"Akij Agro Feed Ltd.",c:69,sal:2456482},{s:"Blue Pill Limited",c:50,sal:2266562},{s:"Hashem Rice Mills Ltd.",c:43,sal:939315},{s:"Akij Air Service Ltd.",c:33,sal:449398},{s:"AKIJ Telecom Limited",c:29,sal:872793},{s:"Bongo Traders Ltd",c:28,sal:658914},{s:"Akij Shipping Line Ltd.",c:21,sal:888487},{s:"Akij Building Solutions Limited",c:20,sal:747175},{s:"Akij Logistics Ltd.",c:19,sal:770259},{s:"Kafil And Razzak Agro Ltd.",c:16,sal:501203},{s:"AKIJ LifeCare Ltd.",c:15,sal:236920},{s:"Akij InfoTech Ltd.",c:15,sal:682800},{s:"Akij Shipping Lines Ltd.",c:13,sal:485366},{s:"Akij Broadcast Media Ltd.",c:12,sal:555912},{s:"M/S The Successors",c:12,sal:231961},{s:"Fariq Agro Ltd.",c:9,sal:199134},{s:"Akij Commodities Ltd.",c:8,sal:265761},{s:"Akij Mediplex Limited",c:7,sal:230569},{s:"Nobayon Traders Ltd.",c:5,sal:312960},{s:"Magnum Steel Industries Limited",c:5,sal:48910},{s:"iBOS Limited",c:4,sal:1003}];
+function useFallback(){
+D=FALLBACK.stock;P=FALLBACK.pr;A=FALLBACK.aging;TO=FALLBACK.dio;CL=FALLBACK.clearance;
+}
 
 function f(v){if(Math.abs(v)>=10000000)return(v/10000000).toFixed(2)+" Cr";if(Math.abs(v)>=100000)return(v/100000).toFixed(2)+" Lac";return Math.round(v).toLocaleString()}
 
@@ -93,7 +99,7 @@ var CUR="overview";
 function setTab(t){CUR=t;document.querySelectorAll(".tab").forEach(function(x){x.classList.toggle("on",x.dataset.t===t)});render()}
 
 function tabsBar(){
-var ts=[["overview","Overview"],["stock","Closing Stock"],["pr","PR Pending"],["aging","Inventory Aging"],["dio","DIO & Turnover"],["clearance","Clearance Pending"],["alerts","Alerts"]];
+var ts=[["overview","Overview"],["stock","Closing Stock"],["pr","PR Pending"],["aging","Inventory Aging"],["dio","DIO & Turnover"],["clearance","Clearance Pending"],["alerts","Alerts"],["strategy","Strategy"]];
 document.getElementById("tabs").innerHTML=ts.map(function(x){return '<div class="tab'+(x[0]===CUR?" on":"")+'" data-t="'+x[0]+'" onclick="setTab(\x60'+x[0]+'\x60)">'+x[1]+'</div>'}).join("");
 }
 
@@ -128,6 +134,7 @@ if(CUR==="aging"){g+=panelAging();}
 if(CUR==="dio"){g+=panelDIO();}
 if(CUR==="clearance"){g+=panelClearance();}
 if(CUR==="alerts"){g+=panelAlerts();}
+if(CUR==="strategy"){g+=panelStrategy();}
 document.getElementById("grid").innerHTML=g;
 after();
 }
@@ -177,6 +184,60 @@ h+='</tbody></table></div></div></div>';
 return h;
 }
 
+function panelStrategy(){
+var KPI=[["Financial","Inventory Value","&darr;"],["Financial","Working Capital","&darr;"],["Financial","Inventory Carrying Cost","&darr;"],["Inventory","Inventory Turnover","&uarr;"],["Inventory","Days of Inventory (DOH)","&darr;"],["Inventory","Stock Accuracy","&uarr;"],["Inventory","Excess Inventory %","&darr;"],["Inventory","Slow Moving Inventory %","&darr;"],["Inventory","Obsolete Inventory %","&darr;"],["Inventory","Inventory Shrinkage","&darr;"],["Availability","Stock Availability","&uarr;"],["Availability","Critical Stock-Out","&darr;"],["Materials","Forecast Accuracy","&uarr;"],["Materials","Material Availability","&uarr;"],["Materials","Supplier OTIF","&uarr;"],["Materials","Lead Time Adherence","&uarr;"],["Warehouse","Warehouse Utilization","Optimal"],["Warehouse","Warehouse Productivity","&uarr;"],["Warehouse","Warehouse Cost/Unit","&darr;"],["Logistics","OTIF Delivery","&uarr;"],["Logistics","Transport Cost/Unit","&darr;"],["Logistics","Vehicle Utilization","&uarr;"],["Logistics","Empty KM %","&darr;"],["Logistics","Delivery Cycle Time","&darr;"],["Customer","Order Fulfillment Rate","&uarr;"],["Customer","Customer Complaint","&darr;"],["Supplier","Supplier Performance Index","&uarr;"],["Process","SOP Compliance","&uarr;"],["Process","ERP Transaction Compliance","&uarr;"],["People","Productivity/Manpower","&uarr;"],["People","Training &amp; Skill Index","&uarr;"],["Governance","Audit Observation Closure","&uarr;"]];
+var TOP10=["Inventory Value","DOH","Inventory Turnover","Stock Availability","Stock Accuracy","Excess + Slow Moving + Obsolete Inventory","Critical Stock-Out","Order Fulfillment / OTIF","Logistics Cost per Unit/MT","Working Capital Released"];
+var RED=["Stock-out / critical shortage","Excess inventory","Inventory aging","Negative stock","Physical vs ERP mismatch","High-value inventory variance","Unapproved/manual transactions","Slow-moving/obsolete inventory","Supplier delay","Customer delivery failure","Warehouse capacity shortage","Transportation bottleneck","High logistics cost","Pending GRN/SRN/DO/POD","Audit observations"];
+var Q5=[["CASH","How much working capital is locked in inventory?"],["AVAILABILITY","Can we supply the business/customer requirements?"],["EFFICIENCY","Are warehouses, people, suppliers and transportation operating efficiently?"],["RISK","Where will the next supply/inventory/logistics problem occur?"],["ACTION","What decision is required from me today?"]];
+var KRA=[["A. Inventory Management","Strategy, policy &amp; SOP | Value, DOH, turnover &amp; working capital control | 300+ warehouse availability | Reduce excess/slow/dead stock | ABC/XYZ, FSN, criticality &amp; aging | Cycle counting &amp; reconciliation | Loss/shrinkage control | Inter-SBU transfer &amp; liquidation"],["B. Materials Management","Group demand planning &amp; MRP | Align demand-supply-procurement-production | Monitor RM/PM/spares/consumables/FG | Forecasting &amp; replenishment standards | Safety stock, ROP, MOQ, lead-time | Critical-material availability"],["C. Logistics &amp; Distribution","Group logistics standards | Primary &amp; secondary transport optimization | Cost per MT/unit/order/km | OTIF &amp; fulfillment | Vehicle, route &amp; load optimization | Vendor performance | POD/challan compliance | Centralized visibility"],["D. Warehouse Management","Layout, capacity &amp; handling standards | Productivity &amp; safety | Rented vs owned optimization | Operating cost control | System vs physical accuracy | Regional network strategy"],["E. Supplier Management","Performance framework, 600+ suppliers | OTIF, quality, lead time, price, capacity | Segmentation &amp; risk management | Alternate/backup for critical materials"],["F. Governance &amp; Compliance","Group policies | ERP/WMS discipline | Standardize 52 businesses | Audit &amp; accountability | Segregation of duties"]];
+var FLOW=["Demand","Forecast","Material Requirement","Supply Planning","Supplier","Inbound Logistics","Warehouse","Inventory","Production / SBU Requirement","Distribution Planning","Transportation","Customer"];
+
+var h='';
+h+='<div class="card ft"><div class="card-h"><h3>&#x1F3AF; Group Supply Chain Mandate</h3><span style="font-size:9px;color:var(--t3)">52 SBUs | 300+ Warehouses | 500+ Manpower | 600+ Suppliers | Full record: <a href="group_supply_chain_mandate.md" target="_blank" style="color:var(--teal)">group_supply_chain_mandate.md</a></span></div><div class="card-b">';
+h+='<div class="alert ag"><span>&#x1F451;</span><div><b>Mission:</b> Establish and lead a standardized, technology-driven and financially efficient Group Supply Chain system covering inventory, materials planning, warehousing, logistics, distribution, supplier coordination and working-capital optimization across all Akij Resource businesses.</div></div>';
+h+='<div class="alert bt" style="background:rgba(14,165,164,0.08);border:1px solid rgba(14,165,164,0.25);color:#7dd3d2"><span>&#x2728;</span><div><b>Role Evolution:</b> From &quot;Inventory Head who controls stock&quot; to &quot;Group Supply Chain Leader who controls the flow of material, inventory, logistics, cash and service.&quot;</div></div>';
+h+='</div></div>';
+
+h+='<div class="card ft"><div class="card-h"><h3>&#x1F551; The 5 Executive Questions — Control Tower Purpose</h3></div><div class="card-b"><table><thead><tr><th>#</th><th>Question</th><th>What It Answers</th></tr></thead><tbody>';
+Q5.forEach(function(q,i){h+='<tr><td style="font-weight:800;color:var(--gold)">'+(i+1)+'</td><td style="font-weight:700;color:var(--teal)">'+q[0]+'</td><td style="color:var(--t2)">'+q[1]+'</td></tr>';});
+h+='</tbody></table></div></div>';
+
+h+='<div class="card ft"><div class="card-h"><h3>&#x1F4CA; KPI Framework (32 KPIs across 10 Areas)</h3><span style="font-size:9px;color:var(--t3)">&uarr; improve &nbsp;|&nbsp; &darr; reduce &nbsp;|&nbsp; Optimal = balanced</span></div><div class="card-b"><div class="scroll"><table><thead><tr><th>KPI Area</th><th>Key KPI</th><th>Direction</th></tr></thead><tbody>';
+KPI.forEach(function(k){var dc=k[2]==="&uarr;"?"var(--green)":k[2]==="&darr;"?"var(--red)":"var(--orange)";h+='<tr><td><span class="bg bt">'+k[0]+'</span></td><td style="font-weight:500;color:var(--t1)">'+k[1]+'</td><td style="font-weight:800;color:'+dc+'">'+k[2]+'</td></tr>';});
+h+='</tbody></table></div></div></div>';
+
+h+='<div class="card v2"><div class="card-h"><h3>&#x2B50; Top 10 KPIs — Personal Group Dashboard</h3></div><div class="card-b"><table><thead><tr><th>#</th><th>KPI</th></tr></thead><tbody>';
+TOP10.forEach(function(k,i){h+='<tr><td style="font-weight:800;color:var(--gold)">'+(i+1)+'</td><td style="font-weight:500;color:var(--t1)">'+k+'</td></tr>';});
+h+='</tbody></table></div></div>';
+
+h+='<div class="card"><div class="card-h"><h3>&#x1F6A8; Red Flag Dashboard (15 Triggers)</h3></div><div class="card-b"><div class="scroll"><table><tbody>';
+RED.forEach(function(r,i){h+='<tr><td style="color:var(--t3);width:20px">'+(i+1)+'</td><td style="color:#fca5a5">&#x1F534; '+r+'</td></tr>';});
+h+='</tbody></table></div></div></div>';
+
+h+='<div class="card ft"><div class="card-h"><h3>&#x1F4E6; Key Responsibility Areas (6 Domains)</h3></div><div class="card-b"><div class="scroll"><table><thead><tr><th>Domain</th><th>Scope</th></tr></thead><tbody>';
+KRA.forEach(function(k){h+='<tr><td style="font-weight:700;color:var(--teal);white-space:nowrap">'+k[0]+'</td><td style="color:var(--t2)">'+k[1]+'</td></tr>';});
+h+='</tbody></table></div></div></div>';
+
+h+='<div class="card ft"><div class="card-h"><h3>&#x1F517; One Integrated Supply Chain Flow</h3><span style="font-size:9px;color:var(--t3)">Right Material &#x2192; Right Quantity &#x2192; Right Location &#x2192; Right Time &#x2192; Right Cost &#x2192; Right Customer</span></div><div class="card-b"><div style="display:flex;flex-wrap:wrap;gap:4px">';
+FLOW.forEach(function(s,i){h+='<span class="bg bt" style="font-size:9px;padding:3px 8px">'+(i+1)+'. '+s+'</span>';if(i<FLOW.length-1)h+='<span style="color:var(--t3);font-size:9px;align-self:center">&#x2192;</span>';});
+h+='</div></div></div>';
+
+h+='<div class="card ft"><div class="card-h"><h3>&#x1F3D7;&#xFE0F; Group Operating Model (4 Levels) &amp; Management Span</h3></div><div class="card-b"><table><thead><tr><th>Level</th><th>Function</th></tr></thead><tbody>';
+h+='<tr><td style="font-weight:700;color:var(--gold)">L1 - Strategy</td><td style="color:var(--t2)">Group Supply Chain Strategy: working capital, inventory, network, logistics, supplier strategy, digital transformation</td></tr>';
+h+='<tr><td style="font-weight:700;color:var(--gold)">L2 - Planning</td><td style="color:var(--t2)">Demand &#x2192; Supply &#x2192; Materials &#x2192; Inventory &#x2192; Distribution</td></tr>';
+h+='<tr><td style="font-weight:700;color:var(--gold)">L3 - Execution</td><td style="color:var(--t2)">Procurement &#x2192; Warehouse &#x2192; Transport &#x2192; Distribution</td></tr>';
+h+='<tr><td style="font-weight:700;color:var(--gold)">L4 - Control</td><td style="color:var(--t2)">ERP &#x2192; WMS &#x2192; BI &#x2192; Audit &#x2192; KPI &#x2192; Exception Management</td></tr>';
+h+='</tbody></table>';
+h+='<div class="alert ao" style="margin-top:8px"><span>&#x1F464;</span><div><b>Management span:</b> Group Head &#x2192; 6 pillars (Inventory, Materials Planning, Warehouse, Logistics &amp; Distribution, Supply Planning, Analytics &amp; Control Tower) &#x2192; Regional/SBU Heads &#x2192; Warehouse/Logistics Managers &#x2192; 500+ operational manpower. <b>Centralized governance + decentralized execution.</b> Manage the system, leadership team, KPIs and exceptions — not 500+ people directly.</div></div>';
+h+='</div></div>';
+
+h+='<div class="card ft"><div class="card-h"><h3>&#x2696;&#xFE0F; Group Standard + SBU-Specific Parameters (52 Businesses)</h3></div><div class="card-b"><table><thead><tr><th>Group Standard (All 52 SBUs)</th><th>SBU-Specific (Per Business)</th></tr></thead><tbody>';
+h+='<tr><td style="color:var(--t2);vertical-align:top">Stock accuracy &#8805; 98&ndash;99%<br>SOP compliance = 100%<br>ERP transaction compliance = 100%<br>Cycle count compliance = 100%<br>OTIF &#8805; Group target<br>Inventory aging control<br>Zero unauthorized/manual delivery</td><td style="color:var(--t2);vertical-align:top">DOH target<br>Safety stock<br>Inventory turnover target<br>Lead time<br>Warehouse utilization<br>Service level<br>Forecast accuracy</td></tr>';
+h+='</tbody></table><div class="alert ag"><span>&#x2705;</span><div><b>Result:</b> Standardization without destroying business flexibility across manufacturing, trading, distribution, project, agricultural, consumer, logistics and technology SBUs.</div></div></div></div>';
+
+return h;
+}
+
 function panelAlerts(){
 var h='<div class="card v2"><div class="card-h"><h3>&#x26A0; Alerts &amp; Action Items</h3></div><div class="card-b">';
 h+='<div class="alert ar"><span>&#x1F6A8;</span><div><b>Akij Essentials:</b> BDT -29.15T negative stock - urgent accounting reconciliation</div></div>';
@@ -204,8 +265,28 @@ new Chart(el,{type:"bar",data:{labels:rows.map(function(x){return x.s}),datasets
 }
 }
 
-document.getElementById("lastUpdate").textContent=new Date().toLocaleString();
+function setSource(mode,ts){
+document.getElementById("lastUpdate").textContent=ts||new Date().toLocaleString();
+var dot=document.querySelector(".live-dot"),txt=document.querySelector(".live-text");
+if(mode==="live"){dot.style.background="var(--green)";txt.textContent="LIVE";txt.style.color="var(--green)";}
+else{dot.style.background="var(--orange)";txt.textContent="SNAPSHOT";txt.style.color="var(--orange)";}
+}
+
+function init(){
+fetch("/api/data",{cache:"no-store"}).then(function(r){
+if(!r.ok)throw new Error("HTTP "+r.status);
+return r.json();
+}).then(function(d){
+loadData(d);
+setSource("live",new Date(d.generatedAt).toLocaleString());
 render();
+}).catch(function(e){
+useFallback();
+setSource("snapshot",null);
+render();
+});
+}
+init();
 </script>
 </body>
 </html>
