@@ -1,0 +1,1893 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Material Management Team - Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg-primary: #0F172A;
+  --bg-card: #1d243c;
+  --bg-card-hover: #2a314e;
+  --text-primary: #E2E8F0;
+  --text-secondary: #898da5;
+  --text-muted: #5a5f7a;
+  --accent-teal: #0EA5A4;
+  --accent-teal-dark: #003333;
+  --accent-gold: #FBBF24;
+  --accent-blue: #57C3FF;
+  --accent-purple: #9A91FB;
+  --border: #343B4F;
+  --danger: #FDB52A;
+  --success: #10B981;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+}
+
+.sidebar {
+  width: 260px;
+  background: linear-gradient(180deg, #101935 0%, #1d243c 100%);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 1000;
+  transition: transform 0.3s ease;
+  overflow-y: auto;
+}
+
+.sidebar.collapsed { transform: translateX(-260px); }
+
+.sidebar-logo {
+  padding: 24px 20px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.sidebar-logo h1 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #a4f0ea;
+  letter-spacing: 0.5px;
+  line-height: 1.4;
+}
+
+.sidebar-logo span {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+.sidebar-nav { padding: 12px 0; flex: 1; }
+
+.nav-section {
+  padding: 16px 20px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  border-left: 3px solid transparent;
+  text-decoration: none;
+  user-select: none;
+}
+
+.nav-item:hover {
+  background: rgba(14, 165, 164, 0.08);
+  color: var(--text-primary);
+}
+
+.nav-item.active {
+  background: rgba(14, 165, 164, 0.12);
+  color: var(--accent-teal);
+  border-left-color: var(--accent-teal);
+}
+
+.nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+.nav-badge {
+  margin-left: auto;
+  background: var(--accent-gold);
+  color: #0F172A;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.main {
+  margin-left: 260px;
+  flex: 1;
+  padding: 24px 32px;
+  min-height: 100vh;
+  transition: margin-left 0.3s ease;
+}
+
+.main.expanded { margin-left: 0; }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.hamburger {
+  width: 36px; height: 36px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 18px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.hamburger:hover {
+  border-color: var(--accent-teal);
+  color: var(--accent-teal);
+}
+
+.breadcrumb {
+  font-size: 12px;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.breadcrumb span { color: var(--accent-teal); }
+
+.topbar-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.topbar-btn {
+  width: 36px; height: 36px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 15px;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.topbar-btn:hover {
+  border-color: var(--accent-teal);
+  color: var(--accent-teal);
+  background: var(--bg-card-hover);
+}
+
+.topbar-btn .tooltip {
+  position: absolute;
+  top: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  border: 1px solid var(--border);
+  z-index: 99;
+}
+
+.topbar-btn:hover .tooltip { opacity: 1; }
+
+.search-box { position: relative; }
+
+.search-box input {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 14px 9px 36px;
+  color: var(--text-primary);
+  font-size: 13px;
+  width: 260px;
+  transition: all 0.2s;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: var(--accent-teal);
+  box-shadow: 0 0 0 3px rgba(14,165,164,0.1);
+}
+
+.search-box input::placeholder { color: var(--text-muted); }
+
+.search-icon-top {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.kpi-card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 18px 22px;
+  border: 1px solid var(--border);
+  transition: all 0.3s;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-card:hover {
+  border-color: var(--accent-teal);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(14,165,164,0.08);
+}
+
+.kpi-card::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 60px; height: 60px;
+  border-radius: 0 0 0 60px;
+  opacity: 0.06;
+  transition: opacity 0.3s;
+}
+
+.kpi-card:hover::after { opacity: 0.12; }
+
+.kpi-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.kpi-icon {
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.kpi-trend {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.kpi-trend.up { background: rgba(16,185,129,0.15); color: var(--success); }
+.kpi-trend.down { background: rgba(253,181,42,0.15); color: var(--danger); }
+
+.kpi-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.kpi-value {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.kpi-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.chart-card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 20px 24px;
+  border: 1px solid var(--border);
+}
+
+.chart-card h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-card h3 .chart-icon {
+  font-size: 16px;
+  opacity: 0.7;
+}
+
+.chart-wrap {
+  position: relative;
+  height: 250px;
+}
+
+.table-section {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 20px 24px;
+  border: 1px solid var(--border);
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.table-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.table-filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.filter-btn:hover, .filter-btn.active {
+  background: rgba(14, 165, 164, 0.15);
+  border-color: var(--accent-teal);
+  color: var(--accent-teal);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+thead th {
+  text-align: left;
+  padding: 10px 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg-card);
+  z-index: 2;
+}
+
+thead th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+thead th.sortable:hover { color: var(--accent-teal); }
+
+tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(52, 59, 79, 0.4);
+  color: var(--text-secondary);
+}
+
+tbody tr {
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+tbody tr:hover td {
+  background: rgba(14, 165, 164, 0.06);
+  color: var(--text-primary);
+}
+
+.cat-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.status-dot.green { background: var(--success); }
+.status-dot.yellow { background: var(--danger); }
+.status-dot.red { background: #EF4444; }
+
+.owner-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  background: rgba(251, 191, 36, 0.15);
+  color: var(--accent-gold);
+}
+
+.owner-badge.hod {
+  background: rgba(87, 195, 255, 0.15);
+  color: var(--accent-blue);
+}
+
+.freq-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.freq-daily { background: rgba(253,181,42,0.2); color: var(--danger); }
+.freq-weekly { background: rgba(154,145,251,0.2); color: var(--accent-purple); }
+.freq-monthly { background: rgba(14,165,164,0.2); color: var(--accent-teal); }
+.freq-annually { background: rgba(87,195,255,0.2); color: var(--accent-blue); }
+.freq-periodic { background: rgba(16,185,129,0.2); color: var(--success); }
+.freq-asreq { background: rgba(137,141,165,0.2); color: var(--text-secondary); }
+.freq-quarterly { background: rgba(108,114,255,0.2); color: #9A91FB; }
+
+.table-scroll {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s;
+}
+
+.modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  width: 560px;
+  max-width: 90vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow);
+  animation: slideUp 0.25s;
+}
+
+.modal h2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.modal .modal-cat {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.modal .detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.modal .detail-item label {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.modal .detail-item span {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.modal .detail-desc {
+  background: var(--bg-card-hover);
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.modal-btns {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.btn-primary {
+  background: var(--accent-teal);
+  color: #0F172A;
+}
+
+.btn-primary:hover { background: #0b8f8f; }
+
+.btn-secondary {
+  background: var(--bg-card-hover);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover { border-color: var(--accent-teal); color: var(--text-primary); }
+
+.toast-container {
+  position: fixed;
+  top: 20px; right: 20px;
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  background: var(--bg-card-hover);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 13px;
+  color: var(--text-primary);
+  box-shadow: var(--shadow);
+  animation: slideIn 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 260px;
+}
+
+.toast.hide { animation: slideOut 0.3s forwards; }
+
+.sbu-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.sbu-chip {
+  background: var(--bg-card-hover);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sbu-chip:hover {
+  border-color: var(--accent-teal);
+  transform: translateY(-2px);
+}
+
+.sbu-chip .sbu-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+.sbu-chip .sbu-sector {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.team-card {
+  background: var(--bg-card-hover);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.team-card:hover {
+  border-color: var(--accent-teal);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+.team-card .team-initial {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 10px;
+  color: #fff;
+}
+
+.team-card .team-code {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.team-card .team-company {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.team-card .team-person {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.team-card .team-type {
+  display: inline-block;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-top: 8px;
+  background: rgba(14, 165, 164, 0.15);
+  color: var(--accent-teal);
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  text-align: center;
+}
+
+.calendar-day-header {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  padding: 8px 0;
+}
+
+.calendar-day {
+  background: var(--bg-card-hover);
+  border-radius: 6px;
+  padding: 8px 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  min-height: 50px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.calendar-day:hover {
+  border-color: var(--accent-teal);
+}
+
+.calendar-day.today {
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+  font-weight: 700;
+}
+
+.calendar-day.has-events {
+  position: relative;
+}
+
+.calendar-day .event-dot {
+  display: inline-block;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  margin: 1px;
+  background: var(--accent-teal);
+}
+
+.empty-cell { min-height: 50px; }
+
+.progress-bar-bg {
+  background: var(--border);
+  border-radius: 4px;
+  height: 6px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s;
+}
+
+.keyboard-hint {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  background: var(--bg-card-hover);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 10px;
+  color: var(--text-muted);
+  z-index: 50;
+  opacity: 0.7;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+.pulse { animation: pulse 2s infinite; }
+
+@media (max-width: 1400px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .charts-row { grid-template-columns: 1fr; }
+  .team-grid { grid-template-columns: repeat(3, 1fr); }
+  .sbu-grid { grid-template-columns: repeat(4, 1fr); }
+  .calendar-grid { gap: 2px; }
+}
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.show { transform: translateX(0); }
+  .main { margin-left: 0 !important; padding: 14px; }
+  .kpi-grid { grid-template-columns: 1fr; }
+  .team-grid { grid-template-columns: repeat(2, 1fr); }
+  .sbu-grid { grid-template-columns: repeat(2, 1fr); }
+  .search-box input { width: 160px; }
+  .calendar-grid { display: none; }
+}
+
+@media print {
+  .sidebar, .topbar, .toast-container, .keyboard-hint, .modal-overlay { display: none !important; }
+  .main { margin-left: 0 !important; padding: 0; }
+  body { background: #fff; color: #000; }
+  .kpi-card, .chart-card, .table-section { background: #fff; border: 1px solid #ccc; }
+}
+</style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <h1>MATERIAL MANAGEMENT</h1>
+    <span>Inventory Material Department<br>Demand &amp; Supply</span>
+    <span style="color:#FBBF24;font-size:10px;">Akij Resource Limited</span>
+    <span style="display:block;margin-top:8px;font-size:10px;color:var(--text-muted);">BASHIR ALAM (HOD)</span>
+    <a href="integrated_report.html" target="_blank" style="display:block;margin-top:10px;padding:6px 12px;background:rgba(14,165,164,0.15);border:1px solid var(--accent-teal);border-radius:6px;color:var(--accent-teal);font-size:11px;text-align:center;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='rgba(14,165,164,0.3)'" onmouseout="this.style.background='rgba(14,165,164,0.15)'">&#x1F4CA; Integrated Report</a>
+    <a href="materials_dashboard.html" target="_blank" style="display:block;margin-top:6px;padding:6px 12px;background:rgba(251,191,36,0.12);border:1px solid var(--accent-gold);border-radius:6px;color:var(--accent-gold);font-size:11px;text-align:center;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='rgba(251,191,36,0.25)'" onmouseout="this.style.background='rgba(251,191,36,0.12)'">&#x1F4E6; Materials Dashboard</a>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section">DASHBOARD</div>
+    <a class="nav-item active" onclick="switchTab('overview', this)" data-tab="overview">
+      <span class="nav-icon">&#x1F4CA;</span> Overview
+    </a>
+    <a class="nav-item" onclick="switchTab('calendar', this)" data-tab="calendar">
+      <span class="nav-icon">&#x1F4C5;</span> Schedule Calendar
+    </a>
+
+    <div class="nav-section">REPORTS</div>
+    <a class="nav-item" onclick="switchTab('reports', this)" data-tab="reports">
+      <span class="nav-icon">&#x1F4C4;</span> All Reports
+    </a>
+    <a class="nav-item" onclick="switchTab('daily', this)" data-tab="daily">
+      <span class="nav-icon">&#x23F0;</span> Daily &amp; Weekly
+    </a>
+    <a class="nav-item" onclick="switchTab('monthly', this)" data-tab="monthly">
+      <span class="nav-icon">&#x1F4C8;</span> Monthly
+    </a>
+    <a class="nav-item" onclick="switchTab('periodic', this)" data-tab="periodic">
+      <span class="nav-icon">&#x1F504;</span> Periodic
+    </a>
+
+    <div class="nav-section">TEAM</div>
+    <a class="nav-item" onclick="switchTab('inventory-team', this)" data-tab="inventory-team">
+      <span class="nav-icon">&#x1F465;</span> Inventory Team
+    </a>
+    <a class="nav-item" onclick="switchTab('employees', this)" data-tab="employees">
+      <span class="nav-icon">&#x1F4CB;</span> Employee Database
+    </a>
+
+    <div class="nav-section">MANAGEMENT</div>
+    <a class="nav-item" onclick="switchTab('kpi', this)" data-tab="kpi">
+      <span class="nav-icon">&#x1F3AF;</span> KPI
+    </a>
+    <a class="nav-item" onclick="switchTab('warehouse', this)" data-tab="warehouse">
+      <span class="nav-icon">&#x1F3ED;</span> Warehouse Profile
+    </a>
+    <a class="nav-item" onclick="switchTab('budget', this)" data-tab="budget">
+      <span class="nav-icon">&#x1F4B0;</span> Budget
+    </a>
+    <a class="nav-item" onclick="switchTab('meetings', this)" data-tab="meetings">
+      <span class="nav-icon">&#x1F4DD;</span> Meetings &amp; Minutes
+    </a>
+
+    <div class="nav-section">GOVERNANCE</div>
+    <a class="nav-item" onclick="switchTab('policy', this)" data-tab="policy">
+      <span class="nav-icon">&#x1F4DC;</span> Policy &amp; SOP
+    </a>
+    <a class="nav-item" onclick="switchTab('audit', this)" data-tab="audit">
+      <span class="nav-icon">&#x1F50D;</span> Audit
+    </a>
+    <a class="nav-item" onclick="switchTab('ec', this)" data-tab="ec">
+      <span class="nav-icon">&#x1F4CB;</span> EC Meeting
+    </a>
+
+    <div class="nav-section">RESOURCES</div>
+    <a class="nav-item" onclick="switchTab('items', this)" data-tab="items">
+      <span class="nav-icon">&#x1F4E6;</span> Item Profile
+    </a>
+    <a class="nav-item" onclick="switchTab('templates', this)" data-tab="templates">
+      <span class="nav-icon">&#x1F4C3;</span> Templates
+    </a>
+    <a class="nav-item" onclick="switchTab('aging', this)" data-tab="aging"><span class="nav-icon">&#x23F3;</span> Aging Analysis</a>
+    <a class="nav-item" onclick="switchTab('warehouse-space', this)" data-tab="warehouse-space"><span class="nav-icon">&#x1F3EC;</span> Warehouse Space</a>
+    <a class="nav-item" onclick="switchTab('closing-stock', this)" data-tab="closing-stock">
+      <span class="nav-icon">&#x1F4E6;</span> Closing Stock
+    </a>
+    <a class="nav-item" onclick="switchTab('sbus', this)" data-tab="sbus">
+      <span class="nav-icon">&#x1F3E2;</span> SBU List
+    </a>
+  </nav>
+</aside>
+
+<div class="toast-container" id="toastContainer"></div>
+<main class="main" id="mainContent"></main>
+<div class="keyboard-hint" id="keyboardHint">Ctrl+K Search &middot; Ctrl+B Sidebar &middot; Esc Close</div>
+
+<script>
+
+const DATA = [
+{cat:"DAILY & WEEKLY REPORT",name:"Inventory Stock Report",desc:"Current stock position of all items",freq:"DAILY",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"DAILY & WEEKLY REPORT",name:"Delivery Reconciliation Report",desc:"Delivery vs System / Physical stock reconciliation",freq:"DAILY",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"DAILY & WEEKLY REPORT",name:"Cycle Count Report",desc:"Clusterwise cycle count",freq:"WEEKLY",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"DAILY & WEEKLY REPORT",name:"Inventory PR Pending Report",desc:"Pending Purchase Requisition (PR) status",freq:"WEEKLY",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"DAILY & WEEKLY REPORT",name:"GRN Pending Report",desc:"GRN Pending report",freq:"WEEKLY",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"DAILY & WEEKLY REPORT",name:"Sales Plan vs Actual Delivery",desc:"Sales plan vs actual delivery comparison",freq:"WEEKLY",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"DAILY & WEEKLY REPORT",name:"Asset Parking Pending",desc:"Pending assets parking / allocation status",freq:"WEEKLY",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"DAILY & WEEKLY REPORT",name:"Stock Value Report",desc:"Total inventory value (at cost price)",freq:"WEEKLY",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"DAILY & WEEKLY REPORT",name:"Diesel Stock Report",desc:"Diesel stock status",freq:"DAILY",sbu:"ACCL",owner:"SBU Lead"},
+{cat:"MONTHLY REPORT",name:"Aging Report",desc:"Slow moving, Non moving & Aging Report",freq:"MONTHLY",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"MONTHLY REPORT",name:"Physical Inventory Report",desc:"Physical Inventory July 2026",freq:"MONTHLY",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"MONTHLY REPORT",name:"Inventory Cycle Count",desc:"Shift-wise cycle count results",freq:"MONTHLY",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"MONTHLY REPORT",name:"Inventory Adjustment",desc:"Record of all inventory adjustments (Gain / Loss)",freq:"MONTHLY",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"MONTHLY REPORT",name:"FG Reconciliation Report",desc:"Reconciliation between physical stock and system stock",freq:"MONTHLY",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"MONTHLY REPORT",name:"Sales & Demand Plan Forecast",desc:"Sales plan and future demand forecast",freq:"MONTHLY",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"MONTHLY REPORT",name:"Production Plan vs Actual",desc:"Production plan versus actual production comparison",freq:"MONTHLY",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"MONTHLY REPORT",name:"Physical Inventory Report (Monthly)",desc:"Monthly physical stock count report",freq:"MONTHLY",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"MONTHLY REPORT",name:"Materials Planning Requirement RM",desc:"Raw Material requirement and planning report",freq:"MONTHLY",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"MONTHLY REPORT",name:"Fixed Asset",desc:"Fixed asset",freq:"MONTHLY",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"MONTHLY REPORT",name:"Material Reconciliation Report",desc:"Material reconciliation",freq:"MONTHLY",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"MONTHLY REPORT",name:"Bag Plan file ACCL from APFIL",desc:"Bag plan for ACCL from APFIL",freq:"MONTHLY",sbu:"ACCL & APFIL",owner:"SBU Lead"},
+{cat:"MONTHLY REPORT",name:"Empty Cement Bag Requirement",desc:"Empty cement bag stock requirement and planning",freq:"MONTHLY",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"PERIODIC REPORT",name:"Mother Vessel Reconciliation",desc:"Mother vessel stock and delivery reconciliation",freq:"PERIODIC",sbu:"CONCERN SBU",owner:"SBU Lead"},
+{cat:"PERIODIC REPORT",name:"Mother Vessel 2021 to 2024 Trading",desc:"Mother Vessel July 2021 to April-2024 Private Trading",freq:"PERIODIC",sbu:"CONCERN SBU",owner:"SBU Lead"},
+{cat:"PERIODIC REPORT",name:"Lighter Vessel Reconciliation",desc:"Lighter vessel stock and delivery reconciliation",freq:"PERIODIC",sbu:"CONCERN SBU",owner:"SBU Lead"},
+{cat:"PERIODIC REPORT",name:"Loan Summary",desc:"Loan stock summary report",freq:"PERIODIC",sbu:"CONCERN SBU",owner:"SBU Lead"},
+{cat:"PERIODIC REPORT",name:"Fumigation Report",desc:"Fumigation status and record report",freq:"PERIODIC",sbu:"CONCERN SBU",owner:"SBU Lead"},
+{cat:"PERIODIC REPORT",name:"All Report Link Organizer",desc:"All Report link",freq:"PERIODIC",sbu:"CONCERN SBU",owner:"SBU Lead"},
+{cat:"MONTHLY TRAINING",name:"Monthly Training Report",desc:"Monthly two training session",freq:"MONTHLY",sbu:"ALL SBUs",owner:"HOD"},
+{cat:"INVENTORY RECORD",name:"ARL Inventory Hierarchy",desc:"Inventory Hierarchy",freq:"As Required",sbu:"All SBUs",owner:"HOD"},
+{cat:"INVENTORY RECORD",name:"Role Profiling",desc:"Job description and responsibilities of each position",freq:"Annually",sbu:"All SBUs",owner:"HOD"},
+{cat:"INVENTORY RECORD",name:"New iBOS Access - Inventory Employees",desc:"Request for new iBOS system login access",freq:"As Required",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"INVENTORY RECORD",name:"Stock Level formula",desc:"Minimum, Maximum & Reorder stock level formulas",freq:"Annually",sbu:"All SBUs",owner:"HOD"},
+{cat:"INVENTORY RECORD",name:"Spare Consumption",desc:"Spare parts and consumable items management",freq:"Monthly",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"AUDIT",name:"Audit Report",desc:"Internal audit report and findings",freq:"As Required",sbu:"All SBUs",owner:"HOD"},
+{cat:"AUDIT",name:"Self Report",desc:"Self audit checklist and report",freq:"Monthly",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"EMPLOYEE DATABASE",name:"Organogram",desc:"Full structure of Inventory Department",freq:"Annually",sbu:"All SBUs",owner:"HOD"},
+{cat:"EMPLOYEE DATABASE",name:"Inventory Team List & Responsibility",desc:"Current team members list with their duties",freq:"Monthly",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"EMPLOYEE DATABASE",name:"Man Power Rotation",desc:"Inventory Team List With Details",freq:"Monthly",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"EMPLOYEE DATABASE",name:"Supervisor List",desc:"List of all supervisors with contact numbers",freq:"Monthly",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"EMPLOYEE DATABASE",name:"Workforce Alignment",desc:"Current number of employees vs required number",freq:"Monthly",sbu:"All SBUs",owner:"HOD"},
+{cat:"EMPLOYEE DATABASE",name:"Employee List - Updated 06.05.2026",desc:"Updated list of all inventory employees",freq:"Monthly",sbu:"All SBUs",owner:"HOD"},
+{cat:"EMPLOYEE DATABASE",name:"Depot wise Employee List & Information",desc:"Employee details and basic information of each depot",freq:"Monthly",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"EMPLOYEE DATABASE",name:"New Manpower Requisition",desc:"Request form for new employees",freq:"As Required",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"EMPLOYEE DATABASE",name:"Employee Clearance",desc:"Clearance form when an employee leaves",freq:"As Required",sbu:"All SBUs",owner:"HOD"},
+{cat:"EMPLOYEE DATABASE",name:"Team & Responsibility List",desc:"Team members list with assigned responsibilities",freq:"Monthly",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"KPI",name:"KPI sheet for SCM Team - May 2026",desc:"KPI Sheet for Supply Chain Team - May 2026",freq:"Annually",sbu:"All SBUs",owner:"HOD"},
+{cat:"KPI",name:"KPI sheet for SCM - BASHIR ALAM",desc:"Bashir Alam Sir KPI",freq:"Annually",sbu:"All SBUs",owner:"HOD"},
+{cat:"KPI",name:"KPI Inventory Full Team",desc:"Inventory all team KPI",freq:"Annually",sbu:"All SBUs",owner:"HOD"},
+{cat:"KPI",name:"MMT KPI 2026-2027",desc:"Record of departmental and individual performance",freq:"Annually",sbu:"All SBUs",owner:"HOD"},
+{cat:"KPI",name:"Weekly KPI",desc:"Weekly performance report",freq:"Weekly",sbu:"All SBUs",owner:"HOD"},
+{cat:"KPI",name:"Template of Weekly KPI",desc:"Weekly KPI template",freq:"As Required",sbu:"All SBUs",owner:"HOD"},
+{cat:"WAREHOUSE PROFILE",name:"Warehouse Compliance Tracker",desc:"Warehouse Compliance Tracker",freq:"As Required",sbu:"All SBUs",owner:"HOD"},
+{cat:"WAREHOUSE PROFILE",name:"Warehouse Agreement Details",desc:"Details of all warehouse rent and agreements",freq:"Annually",sbu:"All SBUs",owner:"HOD"},
+{cat:"WAREHOUSE PROFILE",name:"Warehouse Capacity Register",desc:"Current storage capacity and usage of each warehouse",freq:"Monthly",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"WAREHOUSE PROFILE",name:"Warehouse Responsible Person",desc:"List of persons in charge of each warehouse",freq:"Monthly",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"WAREHOUSE PROFILE",name:"ARL Warehouse Workflow",desc:"Step-by-step work process of warehouse",freq:"Annually",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"WAREHOUSE PROFILE",name:"ARL Warehouse List with Product, Location & Responsible",desc:"Warehouse wise inventory product",freq:"Annually",sbu:"All SBUs",owner:"HOD"},
+{cat:"WAREHOUSE PROFILE",name:"Warehouse List with Product Distribution",desc:"Warehouse wise inventory product",freq:"As Required",sbu:"All SBUs",owner:"HOD"},
+{cat:"WAREHOUSE PROFILE",name:"WIP Warehouse Process",desc:"Work in Progress warehouse process document",freq:"Annually",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"WAREHOUSE PROFILE",name:"Warehouse Common Problems",desc:"",freq:"As Required",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"TEMPLATE",name:"TA/DA Register (Common Format)",desc:"Travel and daily allowance record",freq:"Monthly",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"TEMPLATE",name:"Check List Eid ul Fitre",desc:"Safety and operational checklist for Eid",freq:"Eid Time",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"TEMPLATE",name:"5S Tracker",desc:"5S implementation and audit tracker",freq:"Monthly",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"POLICY & SOP",name:"ARL Inventory Policy",desc:"Official Inventory Department policies",freq:"As Required",sbu:"All SBUs",owner:"HOD"},
+{cat:"POLICY & SOP",name:"SOP",desc:"Standard Operating Procedures for inventory processes",freq:"Annually",sbu:"All SBUs",owner:"HOD"},
+{cat:"POLICY & SOP",name:"Inventory Process Flow Chart",desc:"End-to-end inventory process flow diagram",freq:"Annually",sbu:"All SBUs",owner:"HOD"},
+{cat:"POLICY & SOP",name:"Inventory Loan Transfer Process Flow",desc:"Loan Transfer Process Flow",freq:"Annually",sbu:"All SBUs",owner:"HOD"},
+{cat:"POLICY & SOP",name:"Inventory Work Sequence",desc:"Step-by-step work sequence for inventory operations",freq:"Annually",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"POLICY & SOP",name:"Inventory Task List",desc:"Daily / monthly tasks list for inventory team",freq:"Monthly",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"ITEM PROFILE",name:"Item Creation Template",desc:"Standard format to create new items",freq:"As Required",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"ITEM PROFILE",name:"Item Profiling",desc:"Item classification (ABC, XYZ, Fast/Slow moving etc.)",freq:"As Required",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"ITEM PROFILE",name:"Service Item Old to New",desc:"Old to new service item conversion / mapping",freq:"As Required",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"ITEM PROFILE",name:"ItemMaster",desc:"Complete master data of all items",freq:"As Required",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"ITEM PROFILE",name:"Item Master Code",desc:"Item coding structure and guidelines",freq:"As Required",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"ITEM PROFILE",name:"Item List",desc:"Complete list of all active items",freq:"As Required",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"ITEM PROFILE",name:"Item Setup Form",desc:"Standard form for new item setup",freq:"As Required",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"EC MEETING",name:"Warehouse Compliance Tracker",desc:"Warehouse Compliance Tracker",freq:"As Required",sbu:"All SBUs",owner:"HOD"},
+{cat:"EC MEETING",name:"Business Rule Register",desc:"All business rules and guidelines register",freq:"As Required",sbu:"All SBUs",owner:"HOD"},
+{cat:"EC MEETING",name:"Audit Report",desc:"Internal audit report and findings",freq:"Annually",sbu:"All SBUs",owner:"HOD"},
+{cat:"EC MEETING",name:"Inventory Management Framework 2026",desc:"Complete inventory management framework for the year 2026",freq:"Annually",sbu:"All SBUs",owner:"HOD"},
+{cat:"EC MEETING",name:"SSOT (Single Source of Truth)",desc:"Single reliable source for all inventory data",freq:"As Required",sbu:"All SBUs",owner:"HOD"},
+{cat:"EC MEETING",name:"Aging Report & Permission",desc:"Stock aging report with approval & permission",freq:"Monthly",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"EC MEETING",name:"Inventory Risk Assessment Register",desc:"Risk assessment register for inventory",freq:"Quarterly",sbu:"All SBUs",owner:"HOD"},
+{cat:"EC MEETING",name:"Inventory Threat Register",desc:"Register of potential inventory threats",freq:"Quarterly",sbu:"All SBUs",owner:"HOD"},
+{cat:"EC MEETING",name:"Issue Register (Operational Problems)",desc:"Register of unresolved operational issues",freq:"Monthly",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"EC MEETING",name:"Root Cause - Inventory Adjustment",desc:"Root cause analysis for inventory adjustments",freq:"As Required",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"EC MEETING",name:"PR Risk Decision",desc:"Purchase Requisition risk assessment and decision",freq:"As Required",sbu:"All SBUs",owner:"HOD"},
+{cat:"EC MEETING",name:"AIL_EC Meeting",desc:"AIL EC Meeting",freq:"As Required",sbu:"All SBUs",owner:"HOD"},
+{cat:"EC MEETING",name:"Inventory Loss Gain Report",desc:"Inventory loss and gain report",freq:"Monthly",sbu:"All SBUs",owner:"HOD"},
+{cat:"EC MEETING",name:"Provision Report",desc:"Provision for inventory obsolescence / loss",freq:"Monthly",sbu:"All SBUs",owner:"HOD"},
+{cat:"EC MEETING",name:"Mother Vessel Report 2022-2026",desc:"Historical Mother Vessel report (2022-2026)",freq:"As Required",sbu:"All SBUs",owner:"HOD"},
+{cat:"OPERATION MEETING",name:"ABC Analysis",desc:"ABC classification of inventory items",freq:"As Required",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"OPERATION MEETING",name:"Pending PO Against PR Report",desc:"Pending Purchase Order against PR report",freq:"Weekly",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"OPERATION MEETING",name:"LC Reconciliation Report",desc:"Letter of Credit reconciliation report",freq:"Monthly",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"OPERATION MEETING",name:"Inventory Leakage & Financial Value",desc:"Leakage report with financial impact",freq:"Monthly",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"OPERATION MEETING",name:"Cycle Count Report (Op)",desc:"Building solution & Trading cluster",freq:"Weekly",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"OPERATION MEETING",name:"Physical Inventory",desc:"Physical inventory count report",freq:"Monthly",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"OPERATION MEETING",name:"Yard Management",desc:"Yard management process and guidelines",freq:"Annually",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"BUDGET",name:"ABP Inventory Budget 2026-2031",desc:"All Inventory Budget_FY 2026-31_V1",freq:"Annually",sbu:"All SBUs",owner:"HOD"},
+{cat:"BUDGET",name:"ARL Departmental Budget 2026-2031",desc:"Building Material Group Budget 2026-2031",freq:"Annually",sbu:"All SBUs",owner:"HOD"},
+{cat:"BUDGET",name:"ARL Departmental Budget 2026-27",desc:"Annual budget for Inventory Department",freq:"Annually",sbu:"All SBUs",owner:"HOD"},
+{cat:"BUDGET",name:"Safety Budget & Security Register",desc:"Safety budget and security related register",freq:"Annually",sbu:"All SBUs",owner:"HOD"},
+{cat:"MEETING & MINUTES",name:"Meeting Link",desc:"Daily Team Building Operation Meeting",freq:"Daily",sbu:"All SBUs",owner:"HOD"},
+{cat:"MEETING & MINUTES",name:"Daily Meeting Host List",desc:"Host List, MOM, Agenda, Late/ Absent List",freq:"Monthly",sbu:"All SBUs",owner:"HOD"},
+{cat:"MEETING & MINUTES",name:"Meeting Minutes",desc:"Record of discussion, decisions and action points of meetings",freq:"Daily",sbu:"All SBUs",owner:"HOD"},
+{cat:"MEETING & MINUTES",name:"Agenda",desc:"Daily meeting agenda",freq:"Daily",sbu:"All SBUs",owner:"HOD"},
+{cat:"MEETING & MINUTES",name:"Inventory Website Link",desc:"All important inventory related website and link collection",freq:"As Required",sbu:"All SBUs",owner:"HOD"},
+{cat:"MEETING & MINUTES",name:"Inventory Forms",desc:"All standard inventory forms and templates",freq:"As Required",sbu:"All SBUs",owner:"SBU Lead"},
+{cat:"MEETING & MINUTES",name:"Akij Resource Info Cube",desc:"Akij Group resource information cube / dashboard",freq:"As Required",sbu:"All SBUs",owner:"HOD"},
+{cat:"MEETING & MINUTES",name:"IT Service Desk",desc:"IT support request and service desk information",freq:"As Required",sbu:"All SBUs",owner:"HOD"},
+{cat:"MEETING & MINUTES",name:"HOD Switchboard",desc:"Head of Department contact switchboard / directory",freq:"As Required",sbu:"All SBUs",owner:"HOD"}
+];
+
+
+const INVENTORY_TEAM = [
+  {code:"AIL",name:"Akij Ispat Limited",type:"Ispat Factory",sector:"Building Solution",owner:"Al Mamun"},
+  {code:"ACCL",name:"Akij Cement Company Ltd.",type:"Cement Factory",sector:"Building Solution",owner:"Rani Chandra Sharker"},
+  {code:"ABSL",name:"Akij Building Solutions Limited",type:"Building Materials",sector:"Building Solution",owner:"Md. Rashed Dewan"},
+  {code:"APFIL",name:"Akij Poly Fibre Industries Ltd.",type:"Bag Production",sector:"Building Solution",owner:"SAJEDUL HAQUE"},
+  {code:"ARMCL",name:"Akij Ready Mix Concrete Ltd",type:"ReadyMix Concrete",sector:"Building Solution",owner:"Team"},
+  {code:"MTS",name:"M/S The Successors",type:"Stone Trading",sector:"Building Solution",owner:"MD.MASUD RANA"},
+  {code:"MSIL",name:"Magnum Steel Industries Limited",type:"Steel",sector:"Building Solution",owner:"Team"},
+  {code:"BTL",name:"Batayon Traders Ltd.",type:"Trading",sector:"Trading",owner:"Team"},
+  {code:"NTL",name:"Nobayon Traders Ltd.",type:"Trading Goods",sector:"Trading",owner:"Md. Nazmul Huda"},
+  {code:"INFO",name:"Akij InfoTech Ltd.",type:"IT Trading",sector:"Trading",owner:"Ehtesham Ul Haque"},
+  {code:"AAIL",name:"AKIJ Automobile Industries Ltd.",type:"Auto Trading",sector:"Trading",owner:"Rashidul Alam"},
+  {code:"TELECOM",name:"AKIJ Telecom Limited",type:"Telecom Trading",sector:"Trading",owner:"Ehtesham Ul Haque"},
+  {code:"ACEL",name:"AKIJ Consumer Electronics Limited",type:"Electronics",sector:"Trading",owner:"Md. Anowarul Islam"},
+  {code:"BLUE",name:"Blue Pill Limited",type:"Electronics",sector:"Trading",owner:"Ehtesham Ul Haque"},
+  {code:"ARL-T",name:"ARL Traders Ltd.",type:"Trading",sector:"Trading",owner:"Team"},
+  {code:"LINEASIA",name:"Lineasia Trading Co. Ltd.",type:"Trading",sector:"Trading",owner:"Team"},
+  {code:"ACL",name:"Akij Commodities Ltd.",type:"Commodities",sector:"Trading",owner:"Chonchal Saha"},
+  {code:"DTCL",name:"Direct Trading Company Ltd",type:"Cotton Trading",sector:"Trading",owner:"Md. Emrul Kayes"},
+  {code:"ETCL",name:"Eurasia Trading Company Ltd",type:"Trading",sector:"Trading",owner:"Team"},
+  {code:"DAILY",name:"Daily Trading Company Ltd",type:"Coal Trading",sector:"Trading",owner:"Shah Md. Atiar Rahman"},
+  {code:"BONGO",name:"Bongo Traders Ltd",type:"Fertilizer",sector:"Trading",owner:"Md. Biplop Hossain"},
+  {code:"AOTC",name:"Asia One Trading Company Ltd",type:"Trading",sector:"Trading",owner:"Team"},
+  {code:"AEL",name:"Akij Essentials Ltd.",type:"Essential Trading",sector:"Essential Trading",owner:"Team"},
+  {code:"HRML",name:"Hashem Rice Mills Ltd.",type:"Rice Trading",sector:"Essential Trading",owner:"Team"},
+  {code:"FAL",name:"Fariq Agro Ltd.",type:"Agro Trading",sector:"Essential Trading",owner:"Team"},
+  {code:"AAF",name:"Akij Agro Feed Ltd.",type:"Feed Production",sector:"FMCG",owner:"Team"},
+  {code:"ALE",name:"Akij Light Engineering Limited",type:"Light Engineering",sector:"FMCG",owner:"Team"},
+  {code:"ABL",name:"Akij Breeders Limited",type:"Poultry",sector:"Poultry & Livestock",owner:"Team"},
+  {code:"LIFECARE",name:"AKIJ LifeCare Ltd.",type:"Healthcare",sector:"Healthcare",owner:"Team"},
+  {code:"ELECTROFAB",name:"Akij Electrofab Limited",type:"Electronics",sector:"Trading",owner:"Md. Anowarul Islam"},
+  {code:"ARL",name:"Akij Resource",type:"Head Office",sector:"Head Office",owner:"BASHIR ALAM (HOD)"},
+  {code:"ASL",name:"Akij Shipping Line Ltd.",type:"Shipping",sector:"Shipping",owner:"Team"}
+];
+
+
+
+const SBU_LIST = [
+  {name:"Akij Ispat Limited",sector:"Building Solution"},
+  {name:"Akij Essentials Ltd.",sector:"Essential Trading"},
+  {name:"Batayon Traders Ltd.",sector:"Trading"},
+  {name:"Hashem Rice Mills Ltd.",sector:"Essential Trading"},
+  {name:"Akij Agro Feed Ltd.",sector:"FMCG"},
+  {name:"Nobayon Traders Ltd.",sector:"Trading"},
+  {name:"Akij Cement Company Ltd.",sector:"Building Solution"},
+  {name:"Akij Light Engineering Limited",sector:"FMCG"},
+  {name:"Akij Poly Fibre Industries Ltd.",sector:"Building Solution"},
+  {name:"M/S The Successors",sector:"Building Solution"},
+  {name:"Fariq Agro Ltd.",sector:"Essential Trading"},
+  {name:"Akij Ready Mix Concrete Ltd",sector:"Building Solution"},
+  {name:"Akij Building Solutions Limited",sector:"Building Solution"},
+  {name:"Akij InfoTech Ltd.",sector:"Trading"},
+  {name:"AKIJ LifeCare Ltd.",sector:"Healthcare"},
+  {name:"Lineasia Trading Co. Ltd.",sector:"Trading"},
+  {name:"AKIJ Automobile Industries Ltd.",sector:"Trading"},
+  {name:"AKIJ Telecom Limited",sector:"Trading"},
+  {name:"Akij Breeders Limited",sector:"Poultry & Livestock"},
+  {name:"ARL Traders Ltd.",sector:"Trading"},
+  {name:"AKIJ Consumer Electronics Limited",sector:"Trading"},
+  {name:"Blue Pill Limited",sector:"Trading"},
+  {name:"Akij Resource",sector:"Head Office"},
+  {name:"Akij Electrofab Limited",sector:"Trading"},
+  {name:"Akij Shipping Line Ltd.",sector:"Shipping"},
+  {name:"Akij Commodities Ltd.",sector:"Trading"},
+  {name:"Direct Trading Company Ltd",sector:"Trading"},
+  {name:"Eurasia Trading Company Ltd",sector:"Trading"},
+  {name:"Daily Trading Company Ltd",sector:"Trading"},
+  {name:"Bongo Traders Ltd",sector:"Trading"},
+  {name:"Asia One Trading Company Ltd",sector:"Trading"},
+  {name:"Magnum Steel Industries Limited",sector:"Building Solution"},
+  {name:"Akij Maritime Limited",sector:"Shipping & Maritime"},
+  {name:"AKIJ AgriLife Limited",sector:"Trading"},
+  {name:"Akij Logistics Ltd.",sector:"Logistics"},
+  {name:"Akij Mediplex Limited",sector:"Healthcare"},
+  {name:"Akij Ocean Line Ltd.",sector:"Shipping"},
+  {name:"Akij Sea Line Limited",sector:"Shipping"},
+  {name:"AKIJ SEA LINE SHIP MANAGEMENT AND OPERATION L.L.C",sector:"Shipping"},
+  {name:"AKIJ SHIPPING LINES PTE LTD, SINGAPORE",sector:"Shipping"},
+  {name:"iBOS Limited",sector:"IT & Software"},
+  {name:"AKIJ BPO Limited",sector:"Trading"},
+  {name:"AKIJ E-Commerce Ltd.",sector:"Trading"},
+  {name:"AKIJ Health & Beauty Ltd",sector:"Trading"},
+  {name:"Akij Engineering Ltd.",sector:"Trading"},
+  {name:"Akij Consulting Limited.",sector:"Trading"},
+  {name:"Akij Landmark Limited",sector:"Real Estate"},
+  {name:"Akij Broadcast Media Ltd.",sector:"Trading"},
+  {name:"Aqkrih International Ltd.",sector:"Trading"},
+  {name:"ARL Trading Int. Ltd.",sector:"Trading"},
+  {name:"AKIJ MoveX Ltd.",sector:"Trading"},
+  {name:"AKIJ Cropentra Ltd.",sector:"Trading"},
+  {name:"AKIJ Drybulk Ltd.",sector:"Shipping"},
+  {name:"AKIJ Carriers Ltd.",sector:"Shipping"},
+  {name:"AKIJ Mediquip Ltd.",sector:"Healthcare"},
+  {name:"AKIJ AgroCare Ltd.",sector:"FMCG"},
+  {name:"Exotica Traders Limited",sector:"Trading"},
+  {name:"Farias Agro Essence",sector:"Agri & Food"},
+  {name:"Nextjobz Limited",sector:"Trading"},
+  {name:"Optima Traders Limited",sector:"Trading"},
+  {name:"Resource PowerLine Limited",sector:"Energy"},
+  {name:"Resource WindLine Limited",sector:"Energy"},
+  {name:"Resource Traders Ltd.",sector:"Trading"},
+  {name:"South Asia Travel & Hajj Service",sector:"Travel"},
+  {name:"SHEIKH FARIQ UDDIN WELFARE TRUST",sector:"Foundation"},
+  {name:"Akij Air Service Ltd.",sector:"Aviation"},
+  {name:"AKIJ Shipping & Trading Limited",sector:"Shipping"}
+];
+
+
+const COLORS = ['#0EA5A4','#FBBF24','#57C3FF','#9A91FB','#FFDBBB','#85DECB','#BAFFF5','#AFEEEE','#FDB52A','#73E6CB','#007f7f','#126962','#6C72FF','#8ACBBF','#BBE3E9','#057C7C','#064663','#a4f0ea','#d2f7f4','#7E89AC'];
+
+
+
+
+const WAREHOUSE_SPACE = [
+  {sbu:"Hashem Rice Mills Ltd.",warehouse:"Hasem Rice Mill",items:4009,current:253538115,max:1839706,safety:0,overstock:1948,understock:1667},
+  {sbu:"Akij Essentials Ltd.",warehouse:"AEL Faridpur",items:105,current:20548891,max:583426,safety:0,overstock:52,understock:47},
+  {sbu:"Akij Essentials Ltd.",warehouse:"AEL Tejgoan",items:835,current:8011371,max:1069788,safety:0,overstock:264,understock:529},
+  {sbu:"Akij Essentials Ltd.",warehouse:"AEL Narayanganj-Consumer",items:53,current:5077677,max:581283,safety:0,overstock:33,understock:19},
+  {sbu:"Akij Essentials Ltd.",warehouse:"AEL Sirajganj - Haider Ali",items:1,current:2127915,max:4127915,safety:0,overstock:0,understock:0},
+  {sbu:"Akij Essentials Ltd.",warehouse:"AEL Sirajganj - Sumon Rice Mill WH-03",items:1,current:1526560,max:1526560,safety:0,overstock:0,understock:0},
+  {sbu:"Fariq Agro Ltd.",warehouse:"Fariq Agro Ltd.",items:3060,current:1511558,max:76571,safety:0,overstock:1043,understock:1755},
+  {sbu:"Akij Cement Company Ltd.",warehouse:"Elenga Depot",items:41,current:1014440,max:24822,safety:0,overstock:5,understock:27},
+  {sbu:"Akij Essentials Ltd.",warehouse:"AEL A RAHMAN PARASH AUTO RICE MILL",items:23,current:959258,max:18676,safety:0,overstock:7,understock:12},
+  {sbu:"Akij Essentials Ltd.",warehouse:"Chittagong Super Depot",items:13,current:953816,max:498136,safety:0,overstock:10,understock:2},
+  {sbu:"Akij Cement Company Ltd.",warehouse:"Churkhai - Mymensingh Depot",items:30,current:910040,max:108852,safety:0,overstock:4,understock:23},
+  {sbu:"Akij Essentials Ltd.",warehouse:"B.Baria Super Depot",items:27,current:762519,max:571269,safety:0,overstock:18,understock:1},
+  {sbu:"Akij Ready Mix Concrete Ltd",warehouse:"ARMCL Gazipur",items:1883,current:569059,max:94160,safety:0,overstock:92,understock:1599},
+  {sbu:"Akij Building Solutions Limited",warehouse:"ABS Factory",items:441,current:544387,max:58535,safety:0,overstock:85,understock:245},
+  {sbu:"Akij Essentials Ltd.",warehouse:"AEL Sagorika",items:138,current:525764,max:557979,safety:0,overstock:44,understock:83},
+  {sbu:"Akij Essentials Ltd.",warehouse:"AEL Sylhet",items:71,current:481029,max:431469,safety:0,overstock:24,understock:36},
+  {sbu:"Akij Essentials Ltd.",warehouse:"AEL Sirajganj - Sumon Rice Mill WH-01",items:1,current:275661,max:275661,safety:0,overstock:0,understock:0},
+  {sbu:"Akij Essentials Ltd.",warehouse:"AEL Bogra - Sorkar Construction WH-01",items:1,current:256916,max:420021,safety:0,overstock:0,understock:0},
+  {sbu:"Akij Essentials Ltd.",warehouse:"AEL Karim Rice Mill",items:293,current:251958,max:1054703,safety:0,overstock:32,understock:255},
+  {sbu:"Akij Essentials Ltd.",warehouse:"Noakhali Super Depot",items:19,current:243693,max:73537,safety:0,overstock:17,understock:0},
+  {sbu:"Akij Ready Mix Concrete Ltd",warehouse:"ARMCL Chittagong",items:820,current:16951,max:86461,safety:0,overstock:132,understock:623},
+  {sbu:"Akij Building Solutions Limited",warehouse:"TVS Warehouse (ABSL-Lube Oil)",items:38,current:1116,max:1875000,safety:0,overstock:0,understock:38},
+  {sbu:"Akij Cement Company Ltd.",warehouse:"ACCL VRM-3 Project",items:87,current:60,max:16556,safety:0,overstock:1,understock:80},
+  {sbu:"Akij Cement Company Ltd.",warehouse:"ACCL WorkShop",items:728,current:9,max:1771,safety:0,overstock:0,understock:715}
+];
+const AGING_STOCK = [
+  {sbu:"iBOS Limited",item:"Milk Powder-500gm [17716592]",location:"iBOS HO Central",value:8840,lastMove:"2021-05-25",daysStale:1903,category:"Obsolete"},
+  {sbu:"iBOS Limited",item:"Hand Tissue [17716601]",location:"iBOS HO Central",value:3869,lastMove:"2021-05-25",daysStale:1903,category:"Obsolete"},
+  {sbu:"iBOS Limited",item:"Coffee-500gm [17716593]",location:"iBOS HO Central",value:3400,lastMove:"2021-05-25",daysStale:1903,category:"Obsolete"},
+  {sbu:"iBOS Limited",item:"Toilet Tissue [17716596]",location:"iBOS HO Central",value:3356,lastMove:"2021-05-25",daysStale:1903,category:"Obsolete"},
+  {sbu:"iBOS Limited",item:"Coffee Mate-500gm [17716594]",location:"iBOS HO Central",value:2200,lastMove:"2021-05-25",daysStale:1903,category:"Obsolete"},
+  {sbu:"Akij Poly Fibre Industries Ltd.",item:"Anilox Ceramic Roller -Z2O-02863",location:"Spares Stock",value:610246,lastMove:"2021-07-01",daysStale:1866,category:"Obsolete"},
+  {sbu:"Akij Poly Fibre Industries Ltd.",item:"Frequency Inverter 55Kw,440Volt,LS-IG5A",location:"Spares Stock",value:237714,lastMove:"2021-07-01",daysStale:1866,category:"Obsolete"},
+  {sbu:"Akij Poly Fibre Industries Ltd.",item:"Servo Drive 3 Phase ACOPOS",location:"Spares Stock",value:125000,lastMove:"2021-07-01",daysStale:1866,category:"Obsolete"},
+  {sbu:"Akij Poly Fibre Industries Ltd.",item:"Hydrolic Aggregate 1.6 l/min 130bar",location:"Spares Stock",value:121344,lastMove:"2021-07-01",daysStale:1866,category:"Obsolete"},
+  {sbu:"Akij Poly Fibre Industries Ltd.",item:"Take Off Motor -ARDS-01053",location:"Spares Stock",value:106144,lastMove:"2021-07-01",daysStale:1866,category:"Obsolete"},
+  {sbu:"Akij Poly Fibre Industries Ltd.",item:"Pneum Adapter D200xD50x180",location:"Spares Stock",value:105299,lastMove:"2021-07-01",daysStale:1866,category:"Obsolete"},
+  {sbu:"Akij Poly Fibre Industries Ltd.",item:"Tension Loadcell PRTL200B 200KG",location:"Spares Stock",value:144000,lastMove:"2021-07-01",daysStale:1866,category:"Obsolete"},
+  {sbu:"Akij Poly Fibre Industries Ltd.",item:"Master Batch-Blue (Local)",location:"Raw Material Stock",value:172381,lastMove:"2021-07-01",daysStale:1866,category:"Obsolete"},
+  {sbu:"Akij Poly Fibre Industries Ltd.",item:"Acceleretor CL-04731D",location:"Raw Material Stock",value:152113,lastMove:"2021-07-01",daysStale:1866,category:"Obsolete"},
+  {sbu:"Akij Poly Fibre Industries Ltd.",item:"Master Batch-Green Grade-220",location:"Raw Material Stock",value:148609,lastMove:"2021-07-01",daysStale:1866,category:"Obsolete"},
+  {sbu:"Akij Poly Fibre Industries Ltd.",item:"HDPE Liner 20.5x33.5 Inch",location:"Raw Material Stock",value:68537,lastMove:"2021-07-01",daysStale:1866,category:"Obsolete"},
+  {sbu:"Akij Poly Fibre Industries Ltd.",item:"HDPE Liner 18.5x27.5 Inch",location:"Raw Material Stock",value:87107,lastMove:"2021-07-01",daysStale:1866,category:"Obsolete"},
+  {sbu:"Akij Poly Fibre Industries Ltd.",item:"Floor Tiles 24x12 Inch",location:"Spares Stock",value:90643,lastMove:"2021-07-01",daysStale:1866,category:"Obsolete"},
+  {sbu:"Akij Poly Fibre Industries Ltd.",item:"Ball Bearing 6314 C3",location:"Spares Stock",value:14437,lastMove:"2021-07-01",daysStale:1866,category:"Obsolete"},
+  {sbu:"Akij Poly Fibre Industries Ltd.",item:"Wall Tiles 20x60 CM",location:"Spares Stock",value:33239,lastMove:"2021-07-01",daysStale:1866,category:"Obsolete"},
+  {sbu:"Batayon Traders Ltd.",item:"Trading Goods (GL: Trading Goods)",location:"-",value:2475120733,lastMove:"2025-07-31",daysStale:375,category:"Obsolete"},
+  {sbu:"Lineasia Trading Co. Ltd.",item:"Trading Goods (GL: Trading Goods)",location:"-",value:77258114,lastMove:"2025-08-05",daysStale:370,category:"Obsolete"},
+  {sbu:"Bongo Traders Ltd",item:"DAP-Brown [155110]",location:"ACCL Factory-Narayangonj",value:277826,lastMove:"2025-09-14",daysStale:330,category:"Non-Moving"},
+  {sbu:"Akij Ready Mix Concrete Ltd",item:"Trading Goods (GL)",location:"-",value:1112848,lastMove:"2025-10-15",daysStale:299,category:"Non-Moving"},
+  {sbu:"M/S The Successors",item:"Raw Materials (GL)",location:"-",value:238071033,lastMove:"2026-02-01",daysStale:190,category:"Non-Moving"},
+  {sbu:"Akij Breeders Limited",item:"Trading Goods (GL)",location:"-",value:200,lastMove:"2026-03-05",daysStale:158,category:"Slow-Moving"},
+  {sbu:"Akij Ready Mix Concrete Ltd",item:"Raw Materials in Transit (GL)",location:"-",value:3445,lastMove:"2026-04-07",daysStale:125,category:"Slow-Moving"},
+  {sbu:"Akij Agro Feed Ltd.",item:"Raw Materials in Transit (GL)",location:"-",value:38,lastMove:"2026-04-09",daysStale:123,category:"Slow-Moving"},
+  {sbu:"Akij Breeders Limited",item:"Raw Materials in Transit (GL)",location:"-",value:29750,lastMove:"2026-04-26",daysStale:106,category:"Slow-Moving"},
+  {sbu:"ARL Traders Ltd.",item:"Trading Goods (GL)",location:"-",value:40050336,lastMove:"2026-05-03",daysStale:99,category:"Slow-Moving"},
+  {sbu:"Akij Resource",item:"Trading Goods (GL)",location:"-",value:5349000,lastMove:"2026-05-03",daysStale:99,category:"Slow-Moving"}
+];
+
+
+
+const CLOSING_STOCK = [
+  {sbu:"Akij Ispat Limited",sector:"Building Solution",item:"MS Rod & Raw Materials",qty:"",value:3978750620,unit:"BDT"},
+  {sbu:"Akij Essentials Ltd.",sector:"Essential Trading",item:"Finished & Trading Goods",qty:"",value:2652138999,unit:"BDT"},
+  {sbu:"Batayon Traders Ltd.",sector:"Trading",item:"Trading Goods",qty:"",value:2475120733,unit:"BDT"},
+  {sbu:"Hashem Rice Mills Ltd.",sector:"Essential Trading",item:"Raw Materials & Rice",qty:"",value:1791215343,unit:"BDT"},
+  {sbu:"Akij Agro Feed Ltd.",sector:"FMCG",item:"Raw Materials & Feed",qty:"",value:1437263397,unit:"BDT"},
+  {sbu:"Nobayon Traders Ltd.",sector:"Trading",item:"Raw Materials & Goods",qty:"",value:1373909205,unit:"BDT"},
+  {sbu:"Akij Cement Company Ltd.",sector:"Building Solution",item:"Raw Materials & Cement",qty:"",value:869483806,unit:"BDT"},
+  {sbu:"Akij Light Engineering Limited",sector:"FMCG",item:"Raw Materials & Finished",qty:"",value:456761888,unit:"BDT"},
+  {sbu:"Akij Poly Fibre Industries Ltd.",sector:"Building Solution",item:"Raw Materials & Bags",qty:"",value:366838166,unit:"BDT"},
+  {sbu:"M/S The Successors",sector:"Building Solution",item:"Raw Materials & Stone",qty:"",value:256363772,unit:"BDT"},
+  {sbu:"Fariq Agro Ltd.",sector:"Essential Trading",item:"Raw Materials & Finished",qty:"",value:249865078,unit:"BDT"},
+  {sbu:"Akij Ready Mix Concrete Ltd",sector:"Building Solution",item:"Raw Materials & Concrete",qty:"",value:174473612,unit:"BDT"},
+  {sbu:"Akij Building Solutions Limited",sector:"Building Solution",item:"Trading Goods & Materials",qty:"",value:162033498,unit:"BDT"},
+  {sbu:"Akij InfoTech Ltd.",sector:"Trading",item:"Trading Goods (IT)",qty:"",value:126832355,unit:"BDT"},
+  {sbu:"AKIJ LifeCare Ltd.",sector:"Healthcare",item:"Trading Goods (Medical)",qty:"",value:97154245,unit:"BDT"},
+  {sbu:"Lineasia Trading Co. Ltd.",sector:"Trading",item:"Trading Goods",qty:"",value:77258114,unit:"BDT"},
+  {sbu:"AKIJ Automobile Industries Ltd.",sector:"Trading",item:"Trading Goods (Vehicles)",qty:"",value:56678269,unit:"BDT"},
+  {sbu:"AKIJ Telecom Limited",sector:"Trading",item:"Trading Goods (Telecom)",qty:"",value:47416827,unit:"BDT"},
+  {sbu:"Akij Breeders Limited",sector:"Poultry & Livestock",item:"Raw Materials & Finished",qty:"",value:43071209,unit:"BDT"},
+  {sbu:"ARL Traders Ltd.",sector:"Trading",item:"Trading Goods",qty:"",value:40050336,unit:"BDT"},
+  {sbu:"AKIJ Consumer Electronics Limited",sector:"Trading",item:"Trading Goods (Electronics)",qty:"",value:28447636,unit:"BDT"},
+  {sbu:"Blue Pill Limited",sector:"Trading",item:"Trading Goods (Electronics)",qty:"",value:17808580,unit:"BDT"},
+  {sbu:"Akij Resource",sector:"Head Office",item:"Trading Goods",qty:"",value:5349000,unit:"BDT"},
+  {sbu:"Akij Electrofab Limited",sector:"Trading",item:"Finished Goods (Electronics)",qty:"",value:421705,unit:"BDT"},
+  {sbu:"Akij Shipping Line Ltd.",sector:"Shipping",item:"Finished Goods",qty:"",value:293978,unit:"BDT"},
+  {sbu:"Akij Commodities Ltd.",sector:"Trading",item:"Trading & Finished Goods",qty:"",value:-229703286,unit:"BDT"},
+  {sbu:"Direct Trading Company Ltd",sector:"Trading",item:"Trading Goods (Cotton)",qty:"",value:-237392653,unit:"BDT"},
+  {sbu:"Eurasia Trading Company Ltd",sector:"Trading",item:"Trading Goods",qty:"",value:-420802148,unit:"BDT"},
+  {sbu:"Daily Trading Company Ltd",sector:"Trading",item:"Trading Goods (Coal)",qty:"",value:-40305008,unit:"BDT"},
+  {sbu:"Bongo Traders Ltd",sector:"Trading",item:"Trading Goods (Fertilizer)",qty:"",value:-29921177,unit:"BDT"},
+  {sbu:"Asia One Trading Company Ltd",sector:"Trading",item:"Trading Goods",qty:"",value:-47896691,unit:"BDT"},
+  {sbu:"Magnum Steel Industries Limited",sector:"Building Solution",item:"Raw Materials & Semi Finished",qty:"",value:-64507484,unit:"BDT"}
+];
+
+
+
+var charts = {};
+var currentFilter = 'all';
+var sidebarOpen = true;
+
+function getCatStyle(cat) {
+  var m = {};
+  if (cat.indexOf('DAILY') >= 0) m = {bg:'rgba(14,165,164,0.15)',color:'#0EA5A4'};
+  else if (cat === 'MONTHLY REPORT') m = {bg:'rgba(154,145,251,0.15)',color:'#9A91FB'};
+  else if (cat === 'MONTHLY TRAINING') m = {bg:'rgba(133,222,203,0.15)',color:'#85DECB'};
+  else if (cat.indexOf('PERIODIC') >= 0) m = {bg:'rgba(16,185,129,0.15)',color:'#10B981'};
+  else if (cat === 'INVENTORY RECORD') m = {bg:'rgba(251,191,36,0.12)',color:'#FBBF24'};
+  else if (cat === 'AUDIT') m = {bg:'rgba(253,181,42,0.15)',color:'#FDB52A'};
+  else if (cat === 'EMPLOYEE DATABASE') m = {bg:'rgba(87,195,255,0.12)',color:'#57C3FF'};
+  else if (cat === 'KPI') m = {bg:'rgba(174,238,238,0.12)',color:'#AFEEEE'};
+  else if (cat === 'WAREHOUSE PROFILE') m = {bg:'rgba(186,255,245,0.12)',color:'#BAFFF5'};
+  else if (cat === 'TEMPLATE') m = {bg:'rgba(133,222,203,0.12)',color:'#85DECB'};
+  else if (cat === 'POLICY & SOP') m = {bg:'rgba(108,114,255,0.12)',color:'#6C72FF'};
+  else if (cat === 'ITEM PROFILE') m = {bg:'rgba(100,205,185,0.12)',color:'#0EA5A4'};
+  else if (cat === 'EC MEETING') m = {bg:'rgba(255,219,187,0.12)',color:'#FFDBBB'};
+  else if (cat === 'OPERATION MEETING') m = {bg:'rgba(87,195,255,0.12)',color:'#57C3FF'};
+  else if (cat === 'BUDGET') m = {bg:'rgba(186,255,245,0.15)',color:'#BAFFF5'};
+  else if (cat === 'MEETING & MINUTES') m = {bg:'rgba(154,145,251,0.15)',color:'#9A91FB'};
+  else m = {bg:'rgba(137,141,165,0.12)',color:'#898da5'};
+  return 'background:' + m.bg + ';color:' + m.color + ';';
+}
+
+function freqClass(f) {
+  var s = f.toUpperCase();
+  if (s.indexOf('DAILY') >= 0) return 'freq-daily';
+  if (s.indexOf('WEEKLY') >= 0) return 'freq-weekly';
+  if (s.indexOf('MONTHLY') >= 0) return 'freq-monthly';
+  if (s.indexOf('ANNUALLY') >= 0 || s.indexOf('ANNUAL') >= 0) return 'freq-annually';
+  if (s.indexOf('PERIODIC') >= 0) return 'freq-periodic';
+  if (s.indexOf('QUARTERLY') >= 0) return 'freq-quarterly';
+  return 'freq-asreq';
+}
+
+function toast(msg) {
+  var c = document.getElementById('toastContainer');
+  var t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = msg;
+  c.appendChild(t);
+  setTimeout(function() { t.classList.add('hide'); setTimeout(function() { t.remove(); }, 300); }, 2500);
+}
+
+function toggleSidebar() {
+  sidebarOpen = !sidebarOpen;
+  var sb = document.getElementById('sidebar');
+  var mn = document.getElementById('mainContent');
+  if (sidebarOpen) { sb.classList.remove('collapsed'); mn.classList.remove('expanded'); }
+  else { sb.classList.add('collapsed'); mn.classList.add('expanded'); }
+}
+
+
+function showModal(report) {
+  var existing = document.querySelector('.modal-overlay');
+  if (existing) existing.remove();
+  var overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+  overlay.innerHTML = '' +
+    '<div class="modal">' +
+    '<h2>' + report.name + '</h2>' +
+    '<span class="modal-cat" style="' + getCatStyle(report.cat) + '">' + report.cat + '</span>' +
+    '<div class="detail-desc">' + (report.desc || 'No description available.') + '</div>' +
+    '<div class="detail-grid">' +
+    '<div class="detail-item"><label>Frequency</label><span>' + report.freq + '</span></div>' +
+    '<div class="detail-item"><label>SBU</label><span>' + report.sbu + '</span></div>' +
+    '<div class="detail-item"><label>Owner</label><span>' + report.owner + '</span></div>' +
+    '<div class="detail-item"><label>Status</label><span><span class="status-dot green"></span> Active</span></div>' +
+    '</div>' +
+    '<div class="modal-btns">' +
+    '<button class="btn btn-secondary" onclick="this.closest(' + "`.modal-overlay`" + ').remove()">Close</button>' +
+    '</div></div>';
+  document.body.appendChild(overlay);
+}
+
+function formatBDT(val) {
+  if (val >= 10000000) return (val / 10000000).toFixed(2) + ' Cr';
+  if (val >= 100000) return (val / 100000).toFixed(2) + ' Lac';
+  return val.toLocaleString();
+}
+
+
+function renderOverview() {
+  var cats = {};
+  DATA.forEach(function(r) { cats[r.cat] = (cats[r.cat] || 0) + 1; });
+  var catNames = Object.keys(cats);
+  var catValues = Object.values(cats);
+  var totalStockValue = CLOSING_STOCK.reduce(function(s, x) { return s + x.value; }, 0);
+
+  var html = '';
+  html += '<div class="topbar">' +
+    '<div class="hamburger" onclick="toggleSidebar()" title="Toggle Sidebar">&#x2630;</div>' +
+    '<div class="breadcrumb">Home / <span>Overview</span></div>' +
+    '<div class="topbar-actions">' +
+    '<div class="search-box"><span class="search-icon-top">&#x1F50D;</span><input type="text" placeholder="Search reports, categories, SBUs..." id="globalSearch" oninput="handleGlobalSearch()"></div>' +
+    '<div class="topbar-btn" onclick="exportCSV()"><span>&#x1F4E5;</span><span class="tooltip">Export CSV</span></div>' +
+    '<div class="topbar-btn" onclick="window.print()"><span>&#x1F5A8;</span><span class="tooltip">Print</span></div>' +
+    '</div></div>';
+
+  html += '<div class="kpi-grid">';
+  html += kpiCard('#0EA5A4','rgba(14,165,164,0.15)','&#x1F4C4;',DATA.length,'Total Reports','Across ' + catNames.length + ' categories');
+  html += kpiCard('#9A91FB','rgba(154,145,251,0.15)','&#x1F4C1;',catNames.length,'Categories','Report categories');
+  html += kpiCard('#FBBF24','rgba(251,191,36,0.15)','&#x1F465;',INVENTORY_TEAM.length,'Team Members','Across ' + CLOSING_STOCK.length + ' SBUs');
+  html += kpiCard('#10B981','rgba(16,185,129,0.15)','&#x1F4B0;',formatBDT(totalStockValue),'Closing Stock Value',CLOSING_STOCK.length + ' SBU positions');
+  html += '</div>';
+
+  html += '<div class="charts-row">';
+  html += '<div class="chart-card"><h3><span class="chart-icon">&#x1F4CA;</span> Reports by Category</h3><div class="chart-wrap"><canvas id="barChart"></canvas></div></div>';
+  html += '<div class="chart-card"><h3><span class="chart-icon">&#x1F4C5;</span> Reports by Frequency</h3><div class="chart-wrap"><canvas id="doughnutChart"></canvas></div></div>';
+  html += '</div>';
+
+  html += '<div class="charts-row">';
+  html += '<div class="chart-card"><h3><span class="chart-icon">&#x1F4B0;</span> Closing Stock Value by Sector</h3><div class="chart-wrap"><canvas id="stockValueChart"></canvas></div></div>';
+  html += '<div class="chart-card"><h3><span class="chart-icon">&#x1F465;</span> Team Distribution by Sector</h3><div class="chart-wrap"><canvas id="pieChart"></canvas></div></div>';
+  html += '</div>';
+
+  document.getElementById('mainContent').innerHTML = html;
+
+  setTimeout(function() {
+    Object.keys(charts).forEach(function(k) { if (charts[k]) charts[k].destroy(); });
+
+    if (document.getElementById('barChart')) {
+      charts.bar = new Chart(document.getElementById('barChart'), {
+        type: 'bar', indexAxis: 'y',
+        data: { labels: catNames.slice(0,10), datasets: [{ label: 'Reports', data: catValues.slice(0,10), backgroundColor: COLORS.slice(0,10).map(function(c){return c+'99'}), borderColor: COLORS.slice(0,10), borderWidth:1, borderRadius:4 }] },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{grid:{color:'rgba(52,59,79,0.3)'},ticks:{color:'#898da5',font:{size:10}}},y:{grid:{display:false},ticks:{color:'#898da5',font:{size:9}}} } }
+      });
+    }
+
+    if (document.getElementById('doughnutChart')) {
+      var fmap = {};
+      DATA.forEach(function(r){var f=r.freq.toUpperCase();var k=f.indexOf('DAILY')>=0?'Daily':f.indexOf('WEEKLY')>=0?'Weekly':f.indexOf('MONTHLY')>=0?'Monthly':f.indexOf('ANNUAL')>=0?'Annually':f.indexOf('PERIODIC')>=0?'Periodic':f.indexOf('QUARTERLY')>=0?'Quarterly':'As Needed';fmap[k]=(fmap[k]||0)+1;});
+      charts.doughnut = new Chart(document.getElementById('doughnutChart'), {
+        type:'doughnut', data:{labels:Object.keys(fmap),datasets:[{data:Object.values(fmap),backgroundColor:['#0EA5A4','#9A91FB','#57C3FF','#FBBF24','#FFDBBB','#898da5','#FDB52A','#85DECB'],borderColor:'#1d243c',borderWidth:2}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#898da5',font:{size:10},padding:14}}}}
+      });
+    }
+
+    if (document.getElementById('pieChart')) {
+      var smap = {};
+      INVENTORY_TEAM.forEach(function(t){smap[t.sector]=(smap[t.sector]||0)+1;});
+      charts.pie = new Chart(document.getElementById('pieChart'), {
+        type:'doughnut', data:{labels:Object.keys(smap),datasets:[{data:Object.values(smap),backgroundColor:['#0EA5A4','#FBBF24','#57C3FF','#9A91FB','#003333'],borderColor:'#1d243c',borderWidth:2}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#898da5',font:{size:10},padding:14}}}}
+      });
+    }
+
+    if (document.getElementById('stockValueChart')) {
+      var secVal = {};
+      CLOSING_STOCK.forEach(function(s){secVal[s.sector]=(secVal[s.sector]||0)+s.value;});
+      charts.stockValue = new Chart(document.getElementById('stockValueChart'), {
+        type:'bar', data:{labels:Object.keys(secVal),datasets:[{label:'Value (BDT)',data:Object.values(secVal).map(function(v){return v/10000000}),backgroundColor:COLORS.slice(0,Object.keys(secVal).length).map(function(c){return c+'99'}),borderColor:COLORS.slice(0,Object.keys(secVal).length),borderWidth:1,borderRadius:4}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return 'BDT '+(ctx.raw*10000000).toLocaleString()}}}},scales:{x:{grid:{color:'rgba(52,59,79,0.3)'},ticks:{color:'#898da5',font:{size:9},maxRotation:30}},y:{grid:{color:'rgba(52,59,79,0.3)'},ticks:{color:'#898da5',font:{size:10},callback:function(v){return v+' Cr'}}}}}
+      });
+    }
+  }, 100);
+}
+
+function kpiCard(color, bg, icon, value, label, sub) {
+  return '<div class="kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:' + bg + ';color:' + color + ';">' + icon + '</div></div><div class="kpi-label">' + label + '</div><div class="kpi-value" style="color:' + color + ';">' + value + '</div><div class="kpi-sub">' + (sub || '') + '</div></div>';
+}
+
+
+function renderTable(data, title, showFilters) {
+  if (showFilters === undefined) showFilters = true;
+  var cats = [];
+  var seen = {};
+  DATA.forEach(function(r) { if (!seen[r.cat]) { seen[r.cat] = true; cats.push(r.cat); } });
+
+  var html = '';
+  html += '<div class="topbar"><div class="hamburger" onclick="toggleSidebar()">&#x2630;</div><div class="breadcrumb">Home / <span>' + title + '</span></div><div class="topbar-actions"><div class="search-box"><span class="search-icon-top">&#x1F50D;</span><input type="text" placeholder="Search..." id="tableSearch" oninput="filterTable()"></div><div class="topbar-btn" onclick="exportCSV()"><span>&#x1F4E5;</span><span class="tooltip">Export CSV</span></div></div></div>';
+
+  html += '<div class="kpi-grid">';
+  html += kpiCard('#0EA5A4','rgba(14,165,164,0.15)','&#x1F4C4;',data.length,'Showing Reports',title);
+  html += kpiCard('#FBBF24','rgba(251,191,36,0.15)','&#x1F4C1;',(new Set(data.map(function(r){return r.cat;}))).size,'Categories','Active categories');
+  html += kpiCard('#57C3FF','rgba(87,195,255,0.15)','&#x1F464;',data.filter(function(r){return r.owner==='HOD'}).length,'HOD Owned','Reports owned by HOD');
+  html += kpiCard('#9A91FB','rgba(154,145,251,0.15)','&#x1F465;',data.filter(function(r){return r.owner==='SBU Lead'}).length,'SBU Lead Owned','Reports owned by SBU Leads');
+  html += '</div>';
+
+  if (showFilters) {
+    html += '<div class="table-filters" id="filterBar" style="margin-bottom:12px;">';
+    html += '<button class="filter-btn active" onclick="setFilter(\x60all\x60,this)">All (' + data.length + ')</button>';
+    cats.forEach(function(c) {
+      html += '<button class="filter-btn" onclick="setFilter(\x60' + c.replace(/'/g,"''") + '\x60,this)">' + c + '</button>';
+    });
+    html += '</div>';
+  }
+
+  html += '<div class="table-section"><div class="table-scroll"><table><thead><tr><th>#</th><th>Category</th><th>Report Name</th><th>Description</th><th>Frequency</th><th>SBU</th><th>Owner</th></tr></thead><tbody id="tableBody">';
+  data.forEach(function(r, i) {
+    var idx = DATA.indexOf(r);
+    html += '<tr data-cat="' + r.cat.replace(/"/g,'&quot;') + '" data-search="' + (r.cat + ' ' + r.name + ' ' + r.desc + ' ' + r.freq + ' ' + r.sbu + ' ' + r.owner).toLowerCase().replace(/"/g,'&quot;') + '" onclick="showModal(DATA[' + idx + '])" style="cursor:pointer;">';
+    html += '<td style="color:var(--text-muted);font-size:11px;">' + (i + 1) + '</td>';
+    html += '<td><span class="cat-badge" style="' + getCatStyle(r.cat) + '">' + r.cat + '</span></td>';
+    html += '<td style="font-weight:500;color:var(--text-primary);">' + r.name + '</td>';
+    html += '<td style="max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + r.desc.replace(/"/g,'&quot;') + '">' + (r.desc || '-') + '</td>';
+    html += '<td><span class="freq-badge ' + freqClass(r.freq) + '">' + r.freq + '</span></td>';
+    html += '<td>' + r.sbu + '</td>';
+    html += '<td><span class="owner-badge ' + (r.owner === 'HOD' ? 'hod' : '') + '">' + r.owner + '</span></td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table></div></div>';
+
+  document.getElementById('mainContent').innerHTML = html;
+  currentFilter = 'all';
+}
+
+
+
+function renderClosingStock() {
+  var totalValue = CLOSING_STOCK.reduce(function(s,x){return s+x.value;},0);
+  var posValue = CLOSING_STOCK.filter(function(s){return s.value>0;}).reduce(function(s,x){return s+x.value;},0);
+  var negValue = Math.abs(CLOSING_STOCK.filter(function(s){return s.value<0;}).reduce(function(s,x){return s+x.value;},0));
+
+  var html = '';
+  html += '<div class="topbar"><div class="hamburger" onclick="toggleSidebar()">&#x2630;</div><div class="breadcrumb">Home / <span>Closing Stock</span></div><div class="topbar-actions"><div class="search-box"><span class="search-icon-top">&#x1F50D;</span><input type="text" placeholder="Search SBUs..." id="stockSearch" oninput="filterStockTable()"></div><div class="topbar-btn" onclick="exportStockCSV()"><span>&#x1F4E5;</span><span class="tooltip">Export CSV</span></div></div></div>';
+
+  html += '<div class="kpi-grid">';
+  html += kpiCard('#10B981','rgba(16,185,129,0.15)','&#x1F4B0;',formatBDT(posValue),'Total Stock Value',CLOSING_STOCK.filter(function(s){return s.value>0;}).length + ' SBUs positive');
+  html += kpiCard('#FDB52A','rgba(253,181,42,0.15)','&#x26A0;',formatBDT(negValue),'Negative Positions',CLOSING_STOCK.filter(function(s){return s.value<0;}).length + ' SBUs negative');
+  html += kpiCard('#0EA5A4','rgba(14,165,164,0.15)','&#x1F4CA;',formatBDT(totalValue),'Net Stock Value',CLOSING_STOCK.length + ' total SBUs');
+  html += kpiCard('#57C3FF','rgba(87,195,255,0.15)','&#x1F4C5;','As of: Aug 10, 2026','As of Date','Latest closing');
+  html += '</div>';
+
+  html += '<div class="charts-row">';
+  html += '<div class="chart-card"><h3><span class="chart-icon">&#x1F4B0;</span> Closing Stock Value by SBU (Top 10)</h3><div class="chart-wrap"><canvas id="stockBarChart"></canvas></div></div>';
+  html += '<div class="chart-card"><h3><span class="chart-icon">&#x1F3ED;</span> Stock Value by Sector</h3><div class="chart-wrap"><canvas id="stockPieChart"></canvas></div></div>';
+  html += '</div>';
+
+  html += '<div class="table-section"><div class="table-header"><h3>Closing Stock Details - All SBUs (Source: DWH SQL Server (203.202.241.211))</h3></div><div class="table-scroll"><table><thead><tr><th>#</th><th>SBU</th><th>Sector</th><th>Item Category</th><th>Value (BDT)</th><th>Status</th></tr></thead><tbody id="stockTableBody">';
+  var sorted = CLOSING_STOCK.slice().sort(function(a,b){return Math.abs(b.value) - Math.abs(a.value);});
+  sorted.forEach(function(s, i) {
+    var isNeg = s.value < 0;
+    var valColor = isNeg ? '#EF4444' : '#10B981';
+    var statusHtml = isNeg ? '<span class="status-dot red"></span> Negative' : '<span class="status-dot green"></span> Positive';
+    html += '<tr data-search="' + (s.sbu + ' ' + s.sector + ' ' + s.item).toLowerCase() + '">';
+    html += '<td style="color:var(--text-muted);font-size:11px;">' + (i + 1) + '</td>';
+    html += '<td style="font-weight:500;color:var(--text-primary);">' + s.sbu + '</td>';
+    html += '<td><span class="cat-badge" style="background:rgba(16,185,129,0.12);color:#10B981;">' + s.sector + '</span></td>';
+    html += '<td>' + s.item + '</td>';
+    html += '<td style="font-weight:600;color:' + valColor + ';">' + Math.abs(s.value).toLocaleString() + '</td>';
+    html += '<td>' + statusHtml + '</td>';
+    html += '</tr>';
+  });
+  html += '<tr style="font-weight:700;background:rgba(14,165,164,0.08);"><td colspan="4" style="text-align:right;color:var(--text-primary);padding:12px;">NET CLOSING STOCK</td><td style="color:' + (totalValue >= 0 ? '#10B981' : '#EF4444') + ';font-size:13px;">' + totalValue.toLocaleString() + '</td><td style="color:var(--text-muted);">BDT</td></tr>';
+  html += '</tbody></table></div></div>';
+
+  document.getElementById('mainContent').innerHTML = html;
+
+  setTimeout(function() {
+    if (document.getElementById('stockBarChart')) {
+      var top = sorted.filter(function(s){return s.value>0;}).slice(0,10);
+      new Chart(document.getElementById('stockBarChart'), {
+        type:'bar',
+        data:{labels:top.map(function(s){return s.sbu;}),datasets:[{label:'Value (Cr)',data:top.map(function(s){return s.value/10000000;}),backgroundColor:COLORS.slice(0,10).map(function(c){return c+'99'}),borderColor:COLORS.slice(0,10),borderWidth:1,borderRadius:4}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(52,59,79,0.3)'},ticks:{color:'#898da5',font:{size:7},maxRotation:45}},y:{grid:{color:'rgba(52,59,79,0.3)'},ticks:{color:'#898da5',font:{size:10},callback:function(v){return v+' Cr'}}}}}
+      });
+    }
+    if (document.getElementById('stockPieChart')) {
+      var sv = {};
+      CLOSING_STOCK.forEach(function(s){sv[s.sector]=(sv[s.sector]||0)+Math.abs(s.value);});
+      new Chart(document.getElementById('stockPieChart'), {
+        type:'doughnut',
+        data:{labels:Object.keys(sv),datasets:[{data:Object.values(sv).map(function(v){return v/10000000;}),backgroundColor:['#0EA5A4','#FBBF24','#57C3FF','#9A91FB','#10B981','#003333','#EF4444','#FDB52A','#85DECB'],borderColor:'#1d243c',borderWidth:2}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:{callbacks:{label:function(c){return 'BDT '+(c.raw*10000000).toLocaleString()}}},legend:{position:'right',labels:{color:'#898da5',font:{size:10},padding:14}}}}
+      });
+    }
+  }, 100);
+}
+
+
+function filterStockTable() {
+  var q = (document.getElementById('stockSearch') || {}).value || '';
+  q = q.toLowerCase();
+  var rows = document.querySelectorAll('#stockTableBody tr');
+  rows.forEach(function(r) {
+    var d = r.getAttribute('data-search');
+    r.style.display = (!q || (d && d.indexOf(q) >= 0)) ? '' : 'none';
+  });
+}
+
+
+function filterTable() {
+  var q = (document.getElementById('tableSearch') || {}).value || '';
+  q = q.toLowerCase();
+  var rows = document.querySelectorAll('#tableBody tr');
+  rows.forEach(function(r) {
+    var match = (!q || r.getAttribute('data-search').indexOf(q) >= 0);
+    if (currentFilter !== 'all') match = match && r.getAttribute('data-cat') === currentFilter;
+    r.style.display = match ? '' : 'none';
+  });
+}
+
+function setFilter(cat, btn) {
+  currentFilter = cat;
+  var btns = document.querySelectorAll('#filterBar .filter-btn');
+  btns.forEach(function(b){b.classList.remove('active');});
+  if (btn) btn.classList.add('active');
+  filterTable();
+}
+
+function handleGlobalSearch() {
+  var q = (document.getElementById('globalSearch') || {}).value || '';
+  q = q.toLowerCase();
+  if (!q) { renderOverview(); return; }
+  var results = DATA.filter(function(r){return (r.cat+' '+r.name+' '+r.desc+' '+r.freq).toLowerCase().indexOf(q)>=0;});
+  if (results.length > 0) renderTable(results, 'Search: "' + q + '"', false);
+  else toast('No results found for "' + q + '"');
+}
+
+function exportCSV() {
+  var rows = [['Category','Report Name','Description','Frequency','SBU','Owner']];
+  DATA.forEach(function(r){rows.push([r.cat,r.name,r.desc,r.freq,r.sbu,r.owner]);});
+  var csv = rows.map(function(r){return r.map(function(c){return '"'+(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var blob = new Blob([csv],{type:'text/csv'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'material_management_reports.csv'; a.click();
+  URL.revokeObjectURL(url); toast('CSV exported!');
+}
+
+function exportStockCSV() {
+  var rows = [['SBU','Sector','Item','Closing Qty','Value (BDT)','Unit']];
+  CLOSING_STOCK.forEach(function(s){rows.push([s.sbu,s.sector,s.item,s.qty,s.value,s.unit]);});
+  var csv = rows.map(function(r){return r.map(function(c){return '"'+(c!==undefined?c.toString():'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var blob = new Blob([csv],{type:'text/csv'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'closing_stock_by_sbu.csv'; a.click();
+  URL.revokeObjectURL(url); toast('Stock CSV exported!');
+}
+
+function renderInventoryTeam() {
+  var html = '<div class="topbar"><div class="hamburger" onclick="toggleSidebar()">&#x2630;</div><div class="breadcrumb">Home / <span>Inventory Team</span></div></div>';
+  html += '<div class="kpi-grid">';
+  html += kpiCard('#0EA5A4','rgba(14,165,164,0.15)','&#x1F465;',INVENTORY_TEAM.length,'Team Members','Across all SBUs');
+  html += kpiCard('#FBBF24','rgba(251,191,36,0.15)','&#x1F3E2;',(new Set(INVENTORY_TEAM.map(function(t){return t.sector;}))).size,'Sectors','Unique sectors');
+  html += kpiCard('#9A91FB','rgba(154,145,251,0.15)','&#x1F4E6;',(new Set(INVENTORY_TEAM.map(function(t){return t.type;}))).size,'Business Types','Operation types');
+  html += kpiCard('#10B981','rgba(16,185,129,0.15)','&#x1F4B0;',formatBDT(CLOSING_STOCK.reduce(function(s,x){return s+x.value;},0)),'Total Stock Value','Closing stock');
+  html += '</div>';
+  html += '<div class="team-grid">';
+  var grads = ['linear-gradient(135deg,#0EA5A4,#003333)','linear-gradient(135deg,#126962,#007f7f)','linear-gradient(135deg,#57C3FF,#1d243c)','linear-gradient(135deg,#9A91FB,#5a5f7a)','linear-gradient(135deg,#FBBF24,#8ACBBF)','linear-gradient(135deg,#10B981,#064663)'];
+  INVENTORY_TEAM.forEach(function(t, idx) {
+    var ini = t.code.substring(0,2).toUpperCase();
+    var g = grads[idx % grads.length];
+    html += '<div class="team-card"><div class="team-initial" style="background:'+g+';">'+ini+'</div><div class="team-code">'+t.code+'</div><div class="team-company">'+t.name+'</div><div class="team-person">'+t.owner+'</div><span class="team-type">'+t.type+'</span></div>';
+  });
+  html += '</div>';
+  document.getElementById('mainContent').innerHTML = html;
+}
+
+
+
+
+function renderAgingStock() {
+  var obsolete = AGING_STOCK.filter(function(s){return s.category==='Obsolete';});
+  var nonMoving = AGING_STOCK.filter(function(s){return s.category==='Non-Moving';});
+  var slowMoving = AGING_STOCK.filter(function(s){return s.category==='Slow-Moving';});
+  var totalAtRisk = AGING_STOCK.reduce(function(s,x){return s+(x.value||0);},0);
+
+  var html = '';
+  html += '<div class="topbar"><div class="hamburger" onclick="toggleSidebar()">&#x2630;</div><div class="breadcrumb">Home / <span>Aging Analysis</span></div><div class="topbar-actions"><div class="search-box"><span class="search-icon-top">&#x1F50D;</span><input type="text" placeholder="Search items..." id="agingSearch" oninput="filterAgingTable()"></div><div class="topbar-btn" onclick="exportAgingCSV()"><span>&#x1F4E5;</span><span class="tooltip">Export CSV</span></div></div></div>';
+
+  html += '<div class="kpi-grid">';
+  html += kpiCard('#EF4444','rgba(239,68,68,0.15)','&#x1F6AB;',obsolete.length,'Obsolete','>12 months no movement');
+  html += kpiCard('#FDB52A','rgba(253,181,42,0.15)','&#x26A0;',nonMoving.length,'Non-Moving','6-12 months stale');
+  html += kpiCard('#57C3FF','rgba(87,195,255,0.15)','&#x23F3;',slowMoving.length,'Slow-Moving','3-6 months stale');
+  html += kpiCard('#10B981','rgba(16,185,129,0.15)','&#x1F4B0;',formatBDT(totalAtRisk),'Total At Risk Value','Combined BDT');
+  html += '</div>';
+
+  html += '<div class="charts-row">';
+  html += '<div class="chart-card"><h3><span class="chart-icon">&#x1F4CA;</span> Aging Value by Category</h3><div class="chart-wrap"><canvas id="agingBarChart"></canvas></div></div>';
+  html += '<div class="chart-card"><h3><span class="chart-icon">&#x1F3ED;</span> At-Risk Value by SBU (Top 8)</h3><div class="chart-wrap"><canvas id="agingSbuChart"></canvas></div></div>';
+  html += '</div>';
+
+  html += '<div class="table-section"><div class="table-header"><h3>Item-Wise & SBU-Wise Aging Details (Source: DWH - WMS + GL)</h3><span style="font-size:10px;color:var(--text-muted);">WMS values = cumulative transaction value | GL values = stock balance</span></div><div class="table-scroll"><table><thead><tr><th>#</th><th>SBU</th><th>Item Name</th><th>Location</th><th>Value (BDT)</th><th>Last Move</th><th>Days</th><th>Status</th></tr></thead><tbody id="agingTableBody">';
+  AGING_STOCK.sort(function(a,b){return b.daysStale - a.daysStale;}).forEach(function(s, i) {
+    var catColor = s.category==='Obsolete'?'#EF4444':s.category==='Non-Moving'?'#FDB52A':'#57C3FF';
+    var catBg = s.category==='Obsolete'?'rgba(239,68,68,0.15)':s.category==='Non-Moving'?'rgba(253,181,42,0.15)':'rgba(87,195,255,0.15)';
+    html += '<tr data-search="' + (s.sbu+' '+s.item+' '+s.category+' '+(s.location||'')).toLowerCase() + '">';
+    html += '<td style="color:var(--text-muted);">' + (i+1) + '</td>';
+    html += '<td style="font-weight:500;color:var(--text-primary);">' + s.sbu + '</td>';
+    html += '<td style="max-width:250px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + s.item.replace(/"/g,'&quot;') + '">' + s.item + '</td>';
+    html += '<td style="color:var(--text-secondary);font-size:10px;">' + (s.location || '-') + '</td>';
+    html += '<td style="font-weight:600;color:'+catColor+';">' + (s.value||0).toLocaleString() + '</td>';
+    html += '<td style="color:var(--text-secondary);">' + s.lastMove + '</td>';
+    html += '<td style="font-weight:600;color:'+catColor+';">' + s.daysStale + '</td>';
+    html += '<td><span class="cat-badge" style="background:'+catBg+';color:'+catColor+';">' + s.category + '</span></td>';
+    html += '</tr>';
+  });
+  html += '<tr style="font-weight:700;background:rgba(239,68,68,0.05);"><td colspan="4" style="text-align:right;color:var(--text-primary);padding:12px;">TOTAL AT-RISK VALUE</td><td style="color:#EF4444;font-size:13px;">' + totalAtRisk.toLocaleString() + '</td><td colspan="3" style="color:var(--text-muted);">' + AGING_STOCK.length + ' items</td></tr>';
+  html += '</tbody></table></div></div>';
+
+  document.getElementById('mainContent').innerHTML = html;
+
+  setTimeout(function() {
+    if (document.getElementById('agingBarChart')) {
+      var cats = {Obsolete:obsolete.reduce(function(s,x){return s+(x.value||0);},0), 'Non-Moving':nonMoving.reduce(function(s,x){return s+(x.value||0);},0), 'Slow-Moving':slowMoving.reduce(function(s,x){return s+(x.value||0);},0)};
+      new Chart(document.getElementById('agingBarChart'), {
+        type:'bar',
+        data:{labels:Object.keys(cats),datasets:[{label:'Value (Cr)',data:Object.values(cats).map(function(v){return v/10000000;}),backgroundColor:['rgba(239,68,68,0.7)','rgba(253,181,42,0.7)','rgba(87,195,255,0.7)'],borderColor:['#EF4444','#FDB52A','#57C3FF'],borderWidth:2,borderRadius:6}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(52,59,79,0.3)'},ticks:{color:'#898da5',font:{size:11}}},y:{grid:{color:'rgba(52,59,79,0.3)'},ticks:{color:'#898da5',font:{size:10},callback:function(v){return v+' Cr'}}}}}
+      });
+    }
+    if (document.getElementById('agingSbuChart')) {
+      var sbumap = {};
+      AGING_STOCK.forEach(function(s){sbumap[s.sbu]=(sbumap[s.sbu]||0)+(s.value||0);});
+      var sbuSorted = Object.keys(sbumap).sort(function(a,b){return sbumap[b]-sbumap[a];}).slice(0,8);
+      new Chart(document.getElementById('agingSbuChart'), {
+        type:'bar',indexAxis:'y',
+        data:{labels:sbuSorted,datasets:[{label:'Value (Cr)',data:sbuSorted.map(function(k){return sbumap[k]/10000000;}),backgroundColor:['#EF4444','#EF4444','#EF4444','#EF4444','#FDB52A','#FDB52A','#57C3FF','#57C3FF'],borderColor:'#1d243c',borderWidth:1,borderRadius:4}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(52,59,79,0.3)'},ticks:{color:'#898da5',font:{size:10},callback:function(v){return v+' Cr'}}},y:{grid:{display:false},ticks:{color:'#898da5',font:{size:9}}}}}
+      });
+    }
+  }, 100);
+}
+
+
+function filterAgingTable() {
+  var q = (document.getElementById('agingSearch') || {}).value || '';
+  q = q.toLowerCase();
+  var rows = document.querySelectorAll('#agingTableBody tr');
+  rows.forEach(function(r) {
+    var d = r.getAttribute('data-search');
+    r.style.display = (!q || (d && d.indexOf(q) >= 0)) ? '' : 'none';
+  });
+}
+
+function exportAgingCSV() {
+  var rows = [['SBU','Item','Value (BDT)','Last Movement','Days Stale','Category']];
+  AGING_STOCK.forEach(function(s){rows.push([s.sbu,s.item,s.value,s.lastMove,s.daysStale,s.category]);});
+  var csv = rows.map(function(r){return r.map(function(c){return '"'+(c!==undefined?c.toString():'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var blob = new Blob([csv],{type:'text/csv'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'aging_analysis.csv'; a.click();
+  URL.revokeObjectURL(url); toast('Aging CSV exported!');
+}
+
+function renderWarehouseSpace() {
+  var totalCurrent = WAREHOUSE_SPACE.reduce(function(s,x){return s+x.current;},0);
+  var totalMax = WAREHOUSE_SPACE.reduce(function(s,x){return s+x.max;},0);
+  var overstockTotal = WAREHOUSE_SPACE.reduce(function(s,x){return s+x.overstock;},0);
+  var understockTotal = WAREHOUSE_SPACE.reduce(function(s,x){return s+x.understock;},0);
+  var avgUtil = totalMax > 0 ? (totalCurrent * 100.0 / totalMax) : 0;
+
+  var html = '';
+  html += '<div class="topbar"><div class="hamburger" onclick="toggleSidebar()">&#x2630;</div><div class="breadcrumb">Home / <span>Warehouse Space</span></div><div class="topbar-actions"><div class="search-box"><span class="search-icon-top">&#x1F50D;</span><input type="text" placeholder="Search warehouses..." id="whSearch" oninput="filterWarehouseTable()"></div></div></div>';
+
+  html += '<div class="kpi-grid">';
+  html += kpiCard('#0EA5A4','rgba(14,165,164,0.15)','&#x1F3EC;',WAREHOUSE_SPACE.length,'Warehouses','With capacity data');
+  html += kpiCard('#10B981','rgba(16,185,129,0.15)','&#x1F4E6;',totalCurrent.toLocaleString(),'Total Current Stock','Sum of all items');
+  html += kpiCard('#FBBF24','rgba(251,191,36,0.15)','&#x1F4CA;',avgUtil.toFixed(1)+'%','Avg Utilization','Current / Max capacity');
+  html += kpiCard('#EF4444','rgba(239,68,68,0.15)','&#x26A0;',overstockTotal,'Overstocked Items','Above max level');
+  html += '</div>';
+
+  html += '<div class="kpi-grid">';
+  html += kpiCard('#57C3FF','rgba(87,195,255,0.15)','&#x1F4C8;',totalMax.toLocaleString(),'Total Max Capacity','Aggregate capacity');
+  html += kpiCard('#9A91FB','rgba(154,145,251,0.15)','&#x2705;',(totalMax - totalCurrent).toLocaleString(),'Free Capacity','Available space');
+  html += kpiCard('#FDB52A','rgba(253,181,42,0.15)','&#x26AB;',understockTotal,'Understock Items','Below min level');
+  html += kpiCard('#85DECB','rgba(133,222,203,0.15)','&#x1F4CB;',WAREHOUSE_SPACE.reduce(function(s,x){return s+x.items;},0),'Total Items','Across all warehouses');
+  html += '</div>';
+
+  html += '<div class="charts-row">';
+  html += '<div class="chart-card"><h3><span class="chart-icon">&#x1F4CA;</span> Top 10 Warehouses by Stock Level</h3><div class="chart-wrap"><canvas id="whBarChart"></canvas></div></div>';
+  html += '<div class="chart-card"><h3><span class="chart-icon">&#x26A0;</span> Overstock vs Understock by Warehouse</h3><div class="chart-wrap"><canvas id="whOverChart"></canvas></div></div>';
+  html += '</div>';
+
+  html += '<div class="table-section"><div class="table-header"><h3>Warehouse Space Details (Source: DWH - WMS tblItemPlantWarehouseArc)</h3></div><div class="table-scroll"><table><thead><tr><th>#</th><th>SBU</th><th>Warehouse</th><th>Items</th><th>Current Stock</th><th>Max Capacity</th><th>Util %</th><th>Overstock</th><th>Understock</th></tr></thead><tbody id="whTableBody">';
+  WAREHOUSE_SPACE.sort(function(a,b){return b.current - a.current;}).forEach(function(w, i) {
+    var util = w.max > 0 ? (w.current * 100.0 / w.max).toFixed(1) : 0;
+    var utilColor = util > 100 ? '#EF4444' : util > 80 ? '#FDB52A' : '#10B981';
+    html += '<tr data-search="' + (w.sbu + ' ' + w.warehouse).toLowerCase() + '">';
+    html += '<td style="color:var(--text-muted);">' + (i+1) + '</td>';
+    html += '<td style="font-weight:500;color:var(--text-primary);">' + w.sbu + '</td>';
+    html += '<td>' + w.warehouse + '</td>';
+    html += '<td>' + w.items + '</td>';
+    html += '<td style="font-weight:600;color:#a4f0ea;">' + w.current.toLocaleString() + '</td>';
+    html += '<td>' + w.max.toLocaleString() + '</td>';
+    html += '<td style="font-weight:600;color:' + utilColor + ';">' + util + '%</td>';
+    html += '<td style="color:#EF4444;font-weight:600;">' + (w.overstock > 0 ? w.overstock : '-') + '</td>';
+    html += '<td style="color:#FDB52A;font-weight:600;">' + (w.understock > 0 ? w.understock : '-') + '</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table></div></div>';
+
+  document.getElementById('mainContent').innerHTML = html;
+
+  setTimeout(function() {
+    if (document.getElementById('whBarChart')) {
+      var top = WAREHOUSE_SPACE.slice().sort(function(a,b){return b.current-a.current;}).slice(0,10);
+      new Chart(document.getElementById('whBarChart'), {
+        type:'bar',indexAxis:'y',
+        data:{labels:top.map(function(w){return w.warehouse.substring(0,30);}),datasets:[{label:'Current Stock',data:top.map(function(w){return w.current;}),backgroundColor:COLORS.slice(0,10).map(function(c){return c+'99'}),borderColor:COLORS.slice(0,10),borderWidth:1,borderRadius:4}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(52,59,79,0.3)'},ticks:{color:'#898da5',font:{size:10},callback:function(v){return (v/1000000).toFixed(1)+'M'}}},y:{grid:{display:false},ticks:{color:'#898da5',font:{size:8}}}}}
+      });
+    }
+    if (document.getElementById('whOverChart')) {
+      var labels = WAREHOUSE_SPACE.slice().sort(function(a,b){return (b.overstock+b.understock)-(a.overstock+a.understock);}).slice(0,10).map(function(w){return w.warehouse.substring(0,25);});
+      var overData = WAREHOUSE_SPACE.slice().sort(function(a,b){return (b.overstock+b.understock)-(a.overstock+a.understock);}).slice(0,10).map(function(w){return w.overstock;});
+      var underData = WAREHOUSE_SPACE.slice().sort(function(a,b){return (b.overstock+b.understock)-(a.overstock+a.understock);}).slice(0,10).map(function(w){return w.understock;});
+      new Chart(document.getElementById('whOverChart'), {
+        type:'bar',
+        data:{labels:labels,datasets:[{label:'Overstock',data:overData,backgroundColor:'rgba(239,68,68,0.7)',borderColor:'#EF4444',borderWidth:1},{label:'Understock',data:underData,backgroundColor:'rgba(253,181,42,0.7)',borderColor:'#FDB52A',borderWidth:1}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{color:'#898da5',font:{size:10}}}},scales:{x:{stacked:false,grid:{color:'rgba(52,59,79,0.3)'},ticks:{color:'#898da5',font:{size:7},maxRotation:45}},y:{grid:{color:'rgba(52,59,79,0.3)'},ticks:{color:'#898da5',font:{size:10}}}}}
+      });
+    }
+  }, 100);
+}
+
+function filterWarehouseTable() {
+  var q = (document.getElementById('whSearch') || {}).value || '';
+  q = q.toLowerCase();
+  var rows = document.querySelectorAll('#whTableBody tr');
+  rows.forEach(function(r) {
+    var d = r.getAttribute('data-search');
+    r.style.display = (!q || (d && d.indexOf(q) >= 0)) ? '' : 'none';
+  });
+}
+function renderSBUList() {
+  var html = '<div class="topbar"><div class="hamburger" onclick="toggleSidebar()">&#x2630;</div><div class="breadcrumb">Home / <span>SBU List</span></div></div>';
+  var secs = {};
+  SBU_LIST.forEach(function(s){secs[s.sector]=(secs[s.sector]||0)+1;});
+  html += '<div class="charts-row"><div class="chart-card"><h3><span class="chart-icon">&#x1F4CA;</span> SBUs by Sector</h3><div class="chart-wrap"><canvas id="sbuChart"></canvas></div></div>';
+  html += '<div class="chart-card" style="display:flex;align-items:center;justify-content:center;"><div style="text-align:center;width:100%;"><div style="font-size:52px;font-weight:700;color:var(--accent-teal);">'+SBU_LIST.length+'</div><div style="color:var(--text-muted);font-size:13px;">Total SBUs</div><div style="margin-top:16px;">';
+  Object.keys(secs).sort(function(a,b){return secs[b]-secs[a];}).forEach(function(s){
+    html += '<div style="display:flex;justify-content:space-between;padding:7px 0;font-size:12px;border-bottom:1px solid var(--border);"><span style="color:var(--text-secondary);">'+s+'</span><span style="color:var(--accent-teal);font-weight:600;">'+secs[s]+'</span></div>';
+  });
+  html += '</div></div></div></div>';
+  html += '<div class="kpi-grid"><div class="kpi-card"><div class="kpi-label">Total SBUs</div><div class="kpi-value" style="color:var(--accent-teal);">'+SBU_LIST.length+'</div></div><div class="kpi-card"><div class="kpi-label">Sectors</div><div class="kpi-value" style="color:#FBBF24;">'+Object.keys(secs).length+'</div></div><div class="kpi-card"><div class="kpi-label">Trading SBUs</div><div class="kpi-value" style="color:#57C3FF;">'+(secs['Trading']||0)+'</div></div><div class="kpi-card"><div class="kpi-label">Building Solution</div><div class="kpi-value" style="color:#10B981;">'+(secs['Building Solution']||0)+'</div></div></div>';
+  html += '<div class="sbu-grid">';
+  SBU_LIST.forEach(function(s){
+    html += '<div class="sbu-chip"><div class="sbu-name">'+s.name+'</div><div class="sbu-sector">'+s.sector+'</div></div>';
+  });
+  html += '</div>';
+  document.getElementById('mainContent').innerHTML = html;
+  setTimeout(function(){
+    if (document.getElementById('sbuChart')) new Chart(document.getElementById('sbuChart'),{type:'bar',data:{labels:Object.keys(secs),datasets:[{label:'SBUs',data:Object.values(secs),backgroundColor:COLORS.map(function(c){return c+'99'}),borderColor:COLORS,borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(52,59,79,0.3)'},ticks:{color:'#898da5',font:{size:8},maxRotation:45}},y:{grid:{color:'rgba(52,59,79,0.3)'},ticks:{color:'#898da5',font:{size:10},stepSize:1}}}}});
+  },100);
+}
+
+function renderCalendar() {
+  var now = new Date();
+  var html = '<div class="topbar"><div class="hamburger" onclick="toggleSidebar()">&#x2630;</div><div class="breadcrumb">Home / <span>Schedule Calendar</span></div><div class="topbar-actions"><div class="topbar-btn" onclick="renderCalendar()"><span>&#x1F504;</span><span class="tooltip">Today</span></div></div></div>';
+  html += '<div class="kpi-grid">';
+  var daily = DATA.filter(function(r){return r.freq.toUpperCase().indexOf('DAILY')>=0;}).length;
+  var weekly = DATA.filter(function(r){return r.freq.toUpperCase().indexOf('WEEKLY')>=0;}).length;
+  var monthly = DATA.filter(function(r){return r.freq.toUpperCase().indexOf('MONTHLY')>=0;}).length;
+  html += kpiCard('#FDB52A','rgba(253,181,42,0.15)','&#x1F4C5;',daily,'Daily Reports','Due every day');
+  html += kpiCard('#9A91FB','rgba(154,145,251,0.15)','&#x1F4C5;',weekly,'Weekly Reports','Due every week');
+  html += kpiCard('#0EA5A4','rgba(14,165,164,0.15)','&#x1F4C5;',monthly,'Monthly Reports','Due monthly');
+  html += kpiCard('#57C3FF','rgba(87,195,255,0.15)','&#x1F535;',DATA.length,'Total Reports','All frequencies');
+  html += '</div>';
+
+  html += '<div class="charts-row"><div class="chart-card"><h3><span class="chart-icon">&#x1F4C5;</span> Report Frequency Calendar - '+now.toLocaleString('default',{month:'long',year:'numeric'})+'</h3>';
+  html += '<div class="calendar-grid">';
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(function(d){html+='<div class="calendar-day-header">'+d+'</div>';});
+  var firstDay = new Date(now.getFullYear(),now.getMonth(),1).getDay();
+  var daysInMonth = new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  var today = now.getDate();
+  for (var i=0;i<firstDay;i++) html += '<div class="empty-cell"></div>';
+  for (var d=1;d<=daysInMonth;d++) {
+    var cls = 'calendar-day' + (d===today?' today':'');
+    html += '<div class="'+cls+'">'+d+'<div style="margin-top:4px;">';
+    if (d%7===1) html += '<span class="event-dot" style="background:#FDB52A;" title="Weekly"></span>';
+    if (d===1||d===15||d===28) html += '<span class="event-dot" style="background:#9A91FB;" title="Bi-weekly"></span>';
+    if (d<=5) html += '<span class="event-dot" title="Daily"></span>';
+    html += '</div></div>';
+  }
+  html += '</div>';
+  html += '<div style="margin-top:14px;display:flex;gap:16px;font-size:11px;color:var(--text-muted);"><span><span class="event-dot" style="display:inline-block;"></span> Daily</span><span><span class="event-dot" style="display:inline-block;background:#FDB52A;"></span> Weekly</span><span><span class="event-dot" style="display:inline-block;background:#9A91FB;"></span> Bi-Weekly</span></div>';
+  html += '</div>';
+
+  html += '<div class="chart-card"><h3><span class="chart-icon">&#x23F0;</span> Upcoming Monthly Reports</h3>';
+  html += '<div style="max-height:250px;overflow-y:auto;">';
+  DATA.filter(function(r){return r.freq.toUpperCase().indexOf('MONTHLY')>=0;}).forEach(function(r){
+    html += '<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;display:flex;justify-content:space-between;align-items:center;"><span style="color:var(--text-primary);">'+r.name+'</span><span style="color:var(--accent-teal);font-size:10px;">End of Month</span></div>';
+  });
+  html += '</div></div></div>';
+
+  document.getElementById('mainContent').innerHTML = html;
+}
+
+
+function switchTab(tab, el) {
+  document.querySelectorAll('.nav-item').forEach(function(i){i.classList.remove('active');});
+  if (el) el.classList.add('active');
+
+  Object.keys(charts).forEach(function(k){if(charts[k])charts[k].destroy();});
+  charts = {};
+
+  switch (tab) {
+    case 'overview': renderOverview(); break;
+    case 'calendar': renderCalendar(); break;
+    case 'reports': renderTable(DATA, 'All Reports'); break;
+    case 'daily': renderTable(DATA.filter(function(r){return r.cat.indexOf('DAILY')>=0;}), 'Daily & Weekly Reports', false); break;
+    case 'monthly': renderTable(DATA.filter(function(r){return r.cat==='MONTHLY REPORT';}), 'Monthly Reports', false); break;
+    case 'periodic': renderTable(DATA.filter(function(r){return r.cat.indexOf('PERIODIC')>=0;}), 'Periodic Reports', false); break;
+    case 'aging': renderAgingStock(); break;
+    case 'warehouse-space': renderWarehouseSpace(); break;
+    case 'closing-stock': renderClosingStock(); break;
+    case 'inventory-team': renderInventoryTeam(); break;
+    case 'employees': renderTable(DATA.filter(function(r){return r.cat==='EMPLOYEE DATABASE';}), 'Employee Database', false); break;
+    case 'kpi': renderTable(DATA.filter(function(r){return r.cat==='KPI';}), 'KPI Reports', false); break;
+    case 'warehouse': renderTable(DATA.filter(function(r){return r.cat==='WAREHOUSE PROFILE';}), 'Warehouse Profile', false); break;
+    case 'budget': renderTable(DATA.filter(function(r){return r.cat==='BUDGET';}), 'Budget Reports', false); break;
+    case 'meetings': renderTable(DATA.filter(function(r){return r.cat==='MEETING & MINUTES';}), 'Meetings & Minutes', false); break;
+    case 'policy': renderTable(DATA.filter(function(r){return r.cat==='POLICY & SOP';}), 'Policy & SOP', false); break;
+    case 'audit': renderTable(DATA.filter(function(r){return r.cat==='AUDIT';}), 'Audit Reports', false); break;
+    case 'ec': renderTable(DATA.filter(function(r){return r.cat==='EC MEETING';}), 'EC Meeting', false); break;
+    case 'items': renderTable(DATA.filter(function(r){return r.cat==='ITEM PROFILE';}), 'Item Profile', false); break;
+    case 'templates': renderTable(DATA.filter(function(r){return r.cat==='TEMPLATE';}), 'Templates', false); break;
+    case 'sbus': renderSBUList(); break;
+    default: renderOverview();
+  }
+}
+
+document.addEventListener('keydown', function(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); var inp = document.querySelector('.search-box input'); if (inp) inp.focus(); }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'b') { e.preventDefault(); toggleSidebar(); }
+});
+
+renderOverview();
+</script>
+</body>
+</html>

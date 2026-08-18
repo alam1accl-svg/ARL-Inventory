@@ -1,0 +1,142 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pending Clearances - ARL Control Tower</title>
+<style>
+:root{--bg:#060b14;--card:#0d1525;--card2:#131d33;--t1:#e2e8f0;--t2:#94a3b8;--t3:#4b5563;--teal:#0EA5A4;--gold:#FBBF24;--blue:#57C3FF;--red:#EF4444;--green:#10B981;--orange:#FDB52A;--border:#1a2744}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--t1);min-height:100vh}
+.topbar{background:linear-gradient(180deg,#0d1525,#060b14);border-bottom:2px solid var(--red);padding:12px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+.topbar h1{font-size:20px;font-weight:900;background:linear-gradient(135deg,var(--red),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.topbar .sub{font-size:10px;color:var(--t3)}
+.topbar .count{font-size:28px;font-weight:900;color:var(--red)}
+.topbar .count-label{font-size:10px;color:var(--t3);text-align:center}
+.main{padding:16px 24px;max-width:1600px;margin:0 auto}
+.chain{display:flex;flex-direction:column;gap:2px;margin-bottom:20px}
+.level{display:flex;align-items:center;gap:0}
+.level-connector{width:3px;height:30px;background:var(--border);margin:0 auto}
+.level-badge{min-width:220px;padding:8px 14px;background:var(--card2);border:1px solid var(--border);border-radius:6px;font-size:11px;display:flex;align-items:center;justify-content:space-between}
+.level-badge .name{font-weight:600;color:var(--t1)}
+.level-badge .role{font-size:9px;color:var(--t3)}
+.level-badge .count{font-weight:800;font-size:14px}
+.level-arrow{margin:0 8px;color:var(--t3);font-size:16px}
+.level-body{margin-left:223px;display:flex;flex-direction:column;gap:4px}
+.section{background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:12px;overflow:hidden}
+.section-header{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:var(--card2);border-bottom:1px solid var(--border);cursor:pointer}
+.section-header:hover{background:rgba(239,68,68,0.05)}
+.section-header h3{font-size:13px;font-weight:600}
+.section-header .meta{font-size:10px;color:var(--t3)}
+.section-body{max-height:0;overflow:hidden;transition:max-height 0.3s}
+.section-body.open{max-height:2000px}
+table{width:100%;border-collapse:collapse;font-size:10px}
+th{text-align:left;padding:6px 10px;color:var(--t3);font-size:8px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--card)}
+td{padding:5px 10px;border-bottom:1px solid rgba(26,39,68,0.5);color:var(--t2)}
+tr:hover td{background:rgba(239,68,68,0.03)}
+.age-critical{color:var(--red);font-weight:700}
+.age-warning{color:var(--orange);font-weight:600}
+.age-normal{color:var(--green)}
+.badge{padding:1px 6px;border-radius:3px;font-size:7px;font-weight:700;white-space:nowrap}
+.b-r{background:rgba(239,68,68,0.15);color:var(--red)}
+.b-o{background:rgba(253,181,42,0.15);color:var(--orange)}
+.b-g{background:rgba(16,185,129,0.15);color:var(--green)}
+.footer{text-align:center;padding:12px;font-size:9px;color:var(--t3);border-top:1px solid var(--border)}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+@media print{body{background:#fff;color:#000}.section,.section-header{background:#fff;border:1px solid #ccc}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div><h1>PENDING CLEARANCES</h1><div class="sub">Purchase Requisition Approvals | HOD: BASHIR ALAM | Source: DWH MCP SQL Server</div></div>
+  <div style="display:flex;align-items:center;gap:30px">
+    <div style="text-align:center"><div class="count" id="totalCount">--</div><div class="count-label">Total Pending</div></div>
+    <div style="text-align:center"><div style="font-size:22px;font-weight:800;color:var(--orange)" id="oldestCount">--</div><div class="count-label">Critical (>1 year)</div></div>
+    <div style="text-align:center"><div style="font-size:22px;font-weight:800;color:var(--teal)" id="sbuCount">--</div><div class="count-label">Affected SBUs</div></div>
+  </div>
+  <div style="display:flex;gap:6px">
+    <button class="topbar-btn" onclick="expandAll()" style="background:var(--card2);border:1px solid var(--border);color:var(--t2);padding:6px 12px;border-radius:5px;font-size:10px;cursor:pointer">Expand All</button>
+    <button class="topbar-btn" onclick="collapseAll()" style="background:var(--card2);border:1px solid var(--border);color:var(--t2);padding:6px 12px;border-radius:5px;font-size:10px;cursor:pointer">Collapse All</button>
+    <a href="control_tower.html" class="topbar-btn" style="background:var(--card2);border:1px solid var(--border);color:var(--teal);padding:6px 12px;border-radius:5px;font-size:10px;text-decoration:none">&#x2190; Control Tower</a>
+  </div>
+</div>
+<div class="main" id="mainContent"></div>
+<div class="footer">ARL Pending Clearances | Inventory Material Department | Data: DWH pro.tblPurchaseRequestHeaderArc | Aug 12, 2026</div>
+<script>
+
+var DATA=[{s:"Akij Cement Ready Mix Concrete",p:"PR-ACRMC-OCT21-3",d:"2021-10-06",a:1771,r:""},{s:"iBOS Limited",p:"PR-iBOS-JAN22-1",d:"2022-01-23",a:1662,r:""},{s:"Blue Pill Limited",p:"PR-BPL-MAY22-6",d:"2022-05-18",a:1547,r:""},{s:"Blue Pill Limited",p:"PR-BPL-AUG22-1",d:"2022-08-02",a:1471,r:""},{s:"AKIJ SHIPPING LINES PTE LTD, SINGAPORE",p:"ANB/DK/SP-ASLL-1-SEP-7",d:"2022-09-14",a:1428,r:""},{s:"AKIJ SHIPPING LINES PTE LTD, SINGAPORE",p:"ANB/DK/SP-ASLL-1-SEP-8",d:"2022-09-14",a:1428,r:""},{s:"AKIJ SHIPPING LINES PTE LTD, SINGAPORE",p:"ANB/DK/SP-ASLL-1-SEP-9",d:"2022-09-14",a:1428,r:""},{s:"M/S The Successors (G2G)",p:"PR-MTSG2G-SEP22-2",d:"2022-09-28",a:1414,r:""},{s:"Direct Trading Company Ltd",p:"PR-DiTCL-JUL23-1",d:"2023-07-12",a:1127,r:""},{s:"iBOS Limited",p:"PR-iBOS-AUG23-3",d:"2023-08-30",a:1078,r:""},{s:"Bongo Traders Ltd",p:"PR-BTL-OCT23-1",d:"2023-10-09",a:1038,r:""},{s:"Bongo Traders Ltd",p:"PR-BTL-OCT23-2",d:"2023-10-09",a:1038,r:""},{s:"M/S The Successors",p:"PR-MTS-SEP24-3",d:"2024-09-28",a:683,r:""},{s:"Akij Commodities Ltd.",p:"PR-ACL-SEP24-3",d:"2024-09-30",a:681,r:""},{s:"Akij Cement Company Ltd.",p:"PR-ACCL-NOV24-210",d:"2024-11-21",a:629,r:""},{s:"Akij Poly Fibre Industries Ltd.",p:"PR-APFIL-MAR25-134",d:"2025-03-25",a:505,r:""},{s:"Akij Poly Fibre Industries Ltd.",p:"PR-APFIL-MAR25-135",d:"2025-03-25",a:505,r:""},{s:"Akij Ispat Limited",p:"PR-AIL-MAR25-50",d:"2025-03-25",a:505,r:""},{s:"Akij Essentials Ltd.",p:"PR-AEL-MAR25-146",d:"2025-03-25",a:505,r:""},{s:"Hashem Rice Mills Ltd.",p:"PR-HRML-MAR25-50",d:"2025-03-25",a:505,r:""},{s:"Akij Ready Mix Concrete Ltd",p:"PR-ARMCL-MAR25-48",d:"2025-03-25",a:505,r:""},{s:"Magnum Steel Industries Limited",p:"PR-MSIL-MAR25-45",d:"2025-03-25",a:505,r:""},{s:"Akij Building Solutions Limited",p:"PR-ABSL-MAR25-35",d:"2025-03-25",a:505,r:""},{s:"Kafil And Razzak Agro Ltd.",p:"PR-KRA-MAR25-30",d:"2025-03-25",a:505,r:""},{s:"Akij Agro Feed Ltd.",p:"PR-AAFL-MAR25-19",d:"2025-03-25",a:505,r:""},{s:"AKIJ LifeCare Ltd.",p:"PR-LCL-JUN26-1",d:"2026-06-03",a:70,r:""}];
+
+var REAL=[{s:"Akij Cement Ready Mix Concrete",p:"PR-ACRMC-OCT21-3",d:"2021-10-06",a:1771},{s:"iBOS Limited",p:"PR-iBOS-JAN22-1",d:"2022-01-23",a:1662},{s:"Blue Pill Limited",p:"PR-BPL-MAY22-6",d:"2022-05-18",a:1547},{s:"Blue Pill Limited",p:"PR-BPL-AUG22-1",d:"2022-08-02",a:1471},{s:"AKIJ SHIPPING LINES PTE LTD, SINGAPORE",p:"ANB/DK/SP-ASLL-1-SEP-7",d:"2022-09-14",a:1428},{s:"AKIJ SHIPPING LINES PTE LTD, SINGAPORE",p:"ANB/DK/SP-ASLL-1-SEP-8",d:"2022-09-14",a:1428},{s:"AKIJ SHIPPING LINES PTE LTD, SINGAPORE",p:"ANB/DK/SP-ASLL-1-SEP-9",d:"2022-09-14",a:1428},{s:"AKIJ SHIPPING LINES PTE LTD, SINGAPORE",p:"ANB/DK/SP-ASLL-1-SEP-10",d:"2022-09-14",a:1428},{s:"AKIJ SHIPPING LINES PTE LTD, SINGAPORE",p:"ANB/DK/SP-ASLL-1-SEP-11",d:"2022-09-14",a:1428},{s:"AKIJ SHIPPING LINES PTE LTD, SINGAPORE",p:"ANB/DK/SP-ASLL-1-SEP-12",d:"2022-09-14",a:1428},{s:"AKIJ SHIPPING LINES PTE LTD, SINGAPORE",p:"ANB/DK/SP-ASLL-1-SEP-13",d:"2022-09-14",a:1428},{s:"M/S The Successors (G2G)",p:"PR-MTSG2G-SEP22-2",d:"2022-09-28",a:1414},{s:"AKIJ SHIPPING LINES PTE LTD, SINGAPORE",p:"PR-ANB/DK/SP-00003",d:"2023-01-05",a:1315},{s:"Direct Trading Company Ltd",p:"PR-DiTCL-JUL23-1",d:"2023-07-12",a:1127},{s:"iBOS Limited",p:"PR-iBOS-AUG23-3",d:"2023-08-30",a:1078},{s:"Bongo Traders Ltd",p:"PR-BTL-OCT23-1",d:"2023-10-09",a:1038},{s:"Bongo Traders Ltd",p:"PR-BTL-OCT23-2",d:"2023-10-09",a:1038},{s:"M/S The Successors",p:"PR-MTS-SEP24-3",d:"2024-09-28",a:683},{s:"Akij Commodities Ltd.",p:"PR-ACL-SEP24-3",d:"2024-09-30",a:681},{s:"Akij Cement Company Ltd.",p:"PR-ACCL-NOV24-210",d:"2024-11-21",a:629}];
+
+var SUMMARY=[{s:"Akij Essentials Ltd.",c:146,o:505,d:"2025-03-25"},{s:"Akij Cement Company Ltd.",c:98,o:629,d:"2024-11-21"},{s:"Akij Poly Fibre Industries Ltd.",c:76,o:505,d:"2025-03-25"},{s:"Akij Ispat Limited",c:50,o:505,d:"2025-03-25"},{s:"Hashem Rice Mills Ltd.",c:50,o:505,d:"2025-03-25"},{s:"Akij Ready Mix Concrete Ltd",c:48,o:505,d:"2025-03-25"},{s:"Magnum Steel Industries Limited",c:45,o:505,d:"2025-03-25"},{s:"Akij Building Solutions Limited",c:35,o:505,d:"2025-03-25"},{s:"Kafil And Razzak Agro Ltd.",c:30,o:505,d:"2025-03-25"},{s:"Akij Agro Feed Ltd.",c:19,o:505,d:"2025-03-25"},{s:"AKIJ SHIPPING LINES PTE LTD, SINGAPORE",c:8,o:1428,d:"2022-09-14"},{s:"Akij Mediplex Limited",c:5,o:0,d:"2026-08-12"},{s:"Akij Resources Ltd",c:5,o:3,d:"2026-08-09"},{s:"Akij Electrofab Limited",c:5,o:14,d:"2026-07-29"},{s:"Akij Air Service Ltd.",c:3,o:3,d:"2026-08-09"},{s:"AKIJ Consumer Electronics Limited",c:3,o:2,d:"2026-08-10"},{s:"iBOS Limited",c:3,o:1662,d:"2022-01-23"},{s:"Akij Commodities Ltd.",c:3,o:681,d:"2024-09-30"},{s:"Akij Shipping Line Ltd.",c:3,o:0,d:"2026-08-12"},{s:"Nextjobz Limited",c:2,o:0,d:"2026-08-12"},{s:"Blue Pill Limited",c:2,o:1547,d:"2022-05-18"},{s:"Akij Landmark Limited",c:2,o:0,d:"2026-08-12"},{s:"Fariq Agro Ltd.",c:2,o:0,d:"2026-08-12"},{s:"Bongo Traders Ltd",c:2,o:1038,d:"2023-10-09"},{s:"AKIJ LifeCare Ltd.",c:1,o:70,d:"2026-06-03"},{s:"Akij Cement Ready Mix Concrete",c:1,o:1771,d:"2021-10-06"},{s:"M/S The Successors",c:1,o:683,d:"2024-09-28"},{s:"Akij Light Engineering Limited",c:1,o:0,d:"2026-08-12"},{s:"M/S The Successors (G2G)",c:1,o:1414,d:"2022-09-28"},{s:"Direct Trading Company Ltd",c:1,o:1127,d:"2023-07-12"},{s:"Akij Consulting Limited.",c:1,o:0,d:"2026-08-12"}];
+
+
+function build(){
+  var totalP=SUMMARY.reduce(function(s,x){return s+x.c},0);
+  var critical=SUMMARY.filter(function(x){return x.o>365}).reduce(function(s,x){return s+x.c},0);
+  var sbus=SUMMARY.length;
+  document.getElementById("totalCount").textContent=totalP;
+  document.getElementById("oldestCount").textContent=critical;
+  document.getElementById("sbuCount").textContent=sbus;
+
+  var h="";
+
+  // LEVEL 1: HOD
+  h+='<div class="chain">';
+  h+='<div class="level"><div class="level-badge" style="border-color:var(--red);background:rgba(239,68,68,0.08)"><div><div class="name" style="color:var(--red)">&#x1F451; BASHIR ALAM</div><div class="role">HOD - Inventory Material Department</div></div><div class="count" style="color:var(--red)">'+totalP+'</div></div>';
+  h+='<span class="level-arrow" style="font-size:22px">&rarr;</span>';
+  h+='<div style="font-size:11px;color:var(--t2)"><b>'+sbus+' SBUs</b> with pending approvals</div></div>';
+  h+='<div class="level-connector"></div>';
+
+  // LEVEL 2: SBU Leads (grouped)
+  h+='<div class="level"><div class="level-badge" style="border-color:var(--orange)"><div><div class="name" style="color:var(--orange)">&#x1F465; SBU LEADS</div><div class="role">Team Members</div></div><div class="count" style="color:var(--orange)">'+sbus+'</div></div>';
+  h+='<span class="level-arrow">&darr;</span><div style="font-size:11px;color:var(--t3)">Pending PRs grouped by SBU</div></div>';
+  h+='</div>';
+
+  // SBU Sections
+  h+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">';
+  SUMMARY.sort(function(a,b){return b.c-a.c}).forEach(function(x){
+    var bg=x.o>365?"var(--red)":x.o>180?"var(--orange)":"var(--teal)";
+    var border=x.o>365?"var(--red)":x.o>180?"var(--orange)":"var(--teal)";
+    h+='<div onclick="toggleSBU(\x60'+x.s.replace(/'/g,"\\'")+'\x60)" style="cursor:pointer;background:var(--card);border:1px solid '+border+';border-radius:6px;padding:8px 12px;min-width:180px;transition:all 0.2s" onmouseover="this.style.background='+"'var(--card2)'"+'" onmouseout="this.style.background='+"'var(--card)'"+'">';
+    h+='<div style="font-size:11px;font-weight:600;color:var(--t1)">'+x.s+'</div>';
+    h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">';
+    h+='<span style="font-size:18px;font-weight:800;color:'+bg+'">'+x.c+'</span>';
+    h+='<span style="font-size:9px;color:var(--t3)">Oldest: '+x.o+'d</span>';
+    h+='</div></div>';
+  });
+  h+='</div>';
+
+  // Critical items table
+  h+='<div class="section" style="border-color:var(--red)"><div class="section-header" onclick="this.nextElementSibling.classList.toggle(\x60open\x60)"><h3 style="color:var(--red)">&#x1F6A8; Critical Pending (>1 Year) - '+critical+' Items</h3><span class="meta">Click to expand</span></div><div class="section-body open"><table><thead><tr><th>#</th><th>SBU</th><th>PR Code</th><th>Request Date</th><th>Days Pending</th><th>Status</th></tr></thead><tbody>';
+  REAL.filter(function(x){return x.a>365}).sort(function(a,b){return b.a-a.a}).forEach(function(x,i){
+    h+='<tr><td style="color:var(--t3)">'+(i+1)+'</td><td style="font-weight:500;color:var(--t1)">'+x.s+'</td><td>'+x.p+'</td><td>'+x.d+'</td><td class="age-critical">'+x.a+' days</td><td><span class="badge b-r">CRITICAL</span></td></tr>';
+  });
+  h+='</tbody></table></div></div>';
+
+  // OLD items
+  h+='<div class="section"><div class="section-header" onclick="this.nextElementSibling.classList.toggle(\x60open\x60)"><h3 style="color:var(--orange)">&#x26A0; Old Pending (180-365 Days)</h3><span class="meta">Click to expand</span></div><div class="section-body"><table><thead><tr><th>#</th><th>SBU</th><th>PR Code</th><th>Request Date</th><th>Days Pending</th><th>Status</th></tr></thead><tbody>';
+  REAL.filter(function(x){return x.a>=180&&x.a<=365}).sort(function(a,b){return b.a-a.a}).forEach(function(x,i){
+    h+='<tr><td style="color:var(--t3)">'+(i+1)+'</td><td style="font-weight:500;color:var(--t1)">'+x.s+'</td><td>'+x.p+'</td><td>'+x.d+'</td><td class="age-warning">'+x.a+' days</td><td><span class="badge b-o">OLD</span></td></tr>';
+  });
+  h+='</tbody></table></div></div>';
+
+  // All recent
+  h+='<div class="section"><div class="section-header" onclick="this.nextElementSibling.classList.toggle(\x60open\x60)"><h3>&#x1F4CB; All Pending PRs by SBU</h3><span class="meta">'+totalP+' total | Click to expand</span></div><div class="section-body"><table><thead><tr><th>#</th><th>SBU</th><th>Pending PRs</th><th>Oldest (Days)</th><th>Last Request</th><th>Action</th></tr></thead><tbody>';
+  SUMMARY.forEach(function(x,i){
+    var cls=x.o>365?"b-r":x.o>180?"b-o":"b-g";
+    var st=x.o>365?"URGENT":x.o>180?"REVIEW":"ACTIVE";
+    h+='<tr><td style="color:var(--t3)">'+(i+1)+'</td><td style="font-weight:500;color:var(--t1)">'+x.s+'</td><td style="font-weight:700;color:var(--orange)">'+x.c+'</td><td class="'+(x.o>365?'age-critical':x.o>180?'age-warning':'age-normal')+'">'+x.o+'d</td><td>'+x.d+'</td><td><span class="badge '+cls+'">'+st+'</span></td></tr>';
+  });
+  h+='</tbody></table></div></div>';
+
+  document.getElementById("mainContent").innerHTML=h;
+}
+
+function expandAll(){document.querySelectorAll(".section-body").forEach(function(x){x.classList.add("open")})}
+function collapseAll(){document.querySelectorAll(".section-body").forEach(function(x){x.classList.remove("open")})}
+
+build();
+</script>
+</body>
+</html>

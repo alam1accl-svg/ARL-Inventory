@@ -1,0 +1,377 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Akij Resource - Integrated Inventory Report</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#0F172A;--card:#1d243c;--card2:#2a314e;--t1:#E2E8F0;--t2:#898da5;--t3:#5a5f7a;--teal:#0EA5A4;--gold:#FBBF24;--blue:#57C3FF;--purple:#9A91FB;--red:#EF4444;--green:#10B981;--orange:#FDB52A;--border:#343B4F}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--t1);min-height:100vh}
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:16px 32px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+.topbar h1{font-size:18px;color:var(--teal)}
+.topbar span{font-size:12px;color:var(--t3)}
+.main{padding:24px 32px;max-width:1600px;margin:0 auto}
+.section-title{font-size:16px;font-weight:700;color:var(--t1);margin:28px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border);display:flex;align-items:center;gap:10px}
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px}
+.kpi .lbl{font-size:11px;color:var(--t3);margin-bottom:6px}
+.kpi .val{font-size:24px;font-weight:700}
+.kpi .sub{font-size:10px;color:var(--t3);margin-top:4px}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
+.chart-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 22px}
+.chart-box h3{font-size:13px;color:var(--t2);margin-bottom:12px}
+.chart-inner{height:300px;position:relative}
+.tbl-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 22px;margin-bottom:24px}
+.tbl-box h3{font-size:13px;color:var(--t2);margin-bottom:12px}
+.tbl-scroll{max-height:500px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{text-align:left;padding:8px 10px;color:var(--t3);font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--card)}
+td{padding:8px 10px;border-bottom:1px solid rgba(52,59,79,0.4);color:var(--t2)}
+tr:hover td{background:rgba(14,165,164,0.04)}
+.badge{padding:2px 8px;border-radius:3px;font-size:9px;font-weight:600}
+.badge-red{background:rgba(239,68,68,0.15);color:var(--red)}
+.badge-green{background:rgba(16,185,129,0.15);color:var(--green)}
+.badge-orange{background:rgba(253,181,42,0.15);color:var(--orange)}
+.badge-teal{background:rgba(14,165,164,0.15);color:var(--teal)}
+.neg{color:var(--red);font-weight:600}
+.pos{color:var(--green);font-weight:600}
+.tabs{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
+.tab{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--t3);font-size:11px;cursor:pointer;transition:all 0.2s}
+.tab:hover,.tab.active{background:rgba(14,165,164,0.15);border-color:var(--teal);color:var(--teal)}
+.search{background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--t1);font-size:12px;width:280px}
+.search:focus{outline:none;border-color:var(--teal)}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+@media(max-width:1200px){.kpi-row{grid-template-columns:repeat(3,1fr)}.chart-row{grid-template-columns:1fr}}
+@media(max-width:768px){.main{padding:12px}.kpi-row{grid-template-columns:repeat(2,1fr)}}
+@media print{.topbar{position:static}body{background:#fff;color:#000}.kpi,.chart-box,.tbl-box{background:#fff;border:1px solid #ccc}}
+</style>
+</head>
+<body>
+<div class="topbar"><div><h1>AKIJ RESOURCE LIMITED</h1><span>Integrated Inventory Report - All Business Concerns | Source: DWH MCP SQL Server | As of: Aug 10, 2026</span></div><div><input class="search" placeholder="Search SBU..." id="globalSearch" oninput="filterAll()"></div></div>
+<div class="main" id="content"></div>
+<script>
+
+const STOCK = [
+  {sbu:"Akij Ispat Limited",net:4008302571,pos:493455294224,neg:489446991653,ncat:"Building Solution"},
+  {sbu:"Batayon Traders Ltd.",net:2475120733,pos:4320464300,neg:1845343567,ncat:"Trading"},
+  {sbu:"Hashem Rice Mills Ltd.",net:1788570477,pos:52710247691,neg:50921677214,ncat:"Essential Trading"},
+  {sbu:"Akij Agro Feed Ltd.",net:1435996185,pos:25728906389,neg:24292910203,ncat:"FMCG"},
+  {sbu:"Nobayon Traders Ltd.",net:1371828915,pos:7507123001,neg:6135294086,ncat:"Trading"},
+  {sbu:"Akij Cement Company Ltd.",net:863372806,pos:150336096778,neg:149472723972,ncat:"Building Solution"},
+  {sbu:"Akij Light Engineering Limited",net:477677972,pos:2315580217,neg:1837902246,ncat:"FMCG"},
+  {sbu:"Akij Poly Fibre Industries Ltd.",net:366288791,pos:17522905434,neg:17156616643,ncat:"Building Solution"},
+  {sbu:"M/S The Successors",net:256363772,pos:8009691056,neg:7753327284,ncat:"Building Solution"},
+  {sbu:"Fariq Agro Ltd.",net:249865077,pos:9055711177,neg:8805846100,ncat:"Essential Trading"},
+  {sbu:"Akij Ready Mix Concrete Ltd",net:174124166,pos:27500426082,neg:27326301916,ncat:"Building Solution"},
+  {sbu:"Akij Building Solutions Limited",net:161934785,pos:4136162897,neg:3974228113,ncat:"Building Solution"},
+  {sbu:"Akij InfoTech Ltd.",net:126832355,pos:545496712,neg:418664357,ncat:"Trading"},
+  {sbu:"AKIJ LifeCare Ltd.",net:97213840,pos:472205876,neg:374992036,ncat:"Healthcare"},
+  {sbu:"Lineasia Trading Co. Ltd.",net:77258114,pos:2421903298,neg:2344645184,ncat:"Trading"},
+  {sbu:"AKIJ Automobile Industries Ltd.",net:56178895,pos:197815398,neg:141636504,ncat:"Trading"},
+  {sbu:"AKIJ Telecom Limited",net:47305431,pos:131397999,neg:84092568,ncat:"Trading"},
+  {sbu:"ARL Traders Ltd.",net:40050336,pos:1728062120,neg:1688011784,ncat:"Trading"},
+  {sbu:"Akij Breeders Limited",net:36285602,pos:204772992,neg:168487389,ncat:"Poultry & Livestock"},
+  {sbu:"AKIJ Consumer Electronics Limited",net:28894515,pos:72704110,neg:43809595,ncat:"Trading"},
+  {sbu:"Blue Pill Limited",net:17818580,pos:675187105,neg:657368525,ncat:"Trading"},
+  {sbu:"Akij Resource",net:5349000,pos:15753592,neg:10404592,ncat:"Head Office"},
+  {sbu:"Akij Electrofab Limited",net:421705,pos:14606418,neg:14184713,ncat:"Trading"},
+  {sbu:"Akij Shipping Line Ltd.",net:293978,pos:417300,neg:123322,ncat:"Shipping"},
+  {sbu:"Bongo Traders Ltd",net:-30750326,pos:9705200273,neg:9735950599,ncat:"Trading"},
+  {sbu:"Daily Trading Company Ltd",net:-40305008,pos:22436926329,neg:22477231336,ncat:"Trading"},
+  {sbu:"Asia One Trading Company Ltd",net:-47896691,pos:1199336815,neg:1247233506,ncat:"Trading"},
+  {sbu:"Magnum Steel Industries Limited",net:-64507484,pos:124396015713,neg:124460523196,ncat:"Building Solution"},
+  {sbu:"Akij Commodities Ltd.",net:-229703286,pos:15410351125,neg:15640054411,ncat:"Trading"},
+  {sbu:"Direct Trading Company Ltd",net:-237392653,pos:8539587847,neg:8776980500,ncat:"Trading"},
+  {sbu:"Eurasia Trading Company Ltd",net:-420802148,pos:6457897990,neg:6878700138,ncat:"Trading"},
+  {sbu:"Akij Essentials Ltd.",net:-29148960684037,pos:170732902756,neg:29319693586793,ncat:"Essential Trading"}
+];
+
+const RECEIPTS_ISSUES = [
+  {sbu:"Akij Essentials Ltd.",receipts:30854253089093,issues:27838116660094,rTx:79225,iTx:189489},
+  {sbu:"Hashem Rice Mills Ltd.",receipts:2322097118639,issues:151113120985,rTx:41449,iTx:33311},
+  {sbu:"Akij Ispat Limited",receipts:406855987259,issues:-4666457821,rTx:25225,iTx:147773},
+  {sbu:"Magnum Steel Industries Limited",receipts:129952017681,issues:-43358149696,rTx:38384,iTx:28184},
+  {sbu:"Akij Agro Feed Ltd.",receipts:43215249945,issues:-11544259112,rTx:54666,iTx:117841},
+  {sbu:"Daily Trading Company Ltd",receipts:41122368395,issues:-20407291982,rTx:3072,iTx:34025},
+  {sbu:"Bongo Traders Ltd",receipts:19373164926,issues:-8576670832,rTx:4059,iTx:11965},
+  {sbu:"Akij Commodities Ltd.",receipts:16268826219,issues:-4036502219,rTx:1565,iTx:7509},
+  {sbu:"Nobayon Traders Ltd.",receipts:5727094565,issues:-3408361344,rTx:2069,iTx:7691},
+  {sbu:"Akij Light Engineering Limited",receipts:4769390546,issues:-3151495123,rTx:19769,iTx:30082},
+  {sbu:"Akij Building Solutions Limited",receipts:4781891250,issues:-895100340,rTx:9033,iTx:18534},
+  {sbu:"Eurasia Trading Company Ltd",receipts:9054940881,issues:-5417214866,rTx:267,iTx:5092},
+  {sbu:"Lineasia Trading Co. Ltd.",receipts:4477817892,issues:-2382652217,rTx:176,iTx:3525},
+  {sbu:"Akij Sea Line Limited",receipts:3446937635,issues:-15119786,rTx:833,iTx:72},
+  {sbu:"Batayon Traders Ltd.",receipts:3065266668,issues:-1656865380,rTx:53,iTx:1468},
+  {sbu:"ARL Traders Ltd.",receipts:2950029651,issues:-1691978081,rTx:27,iTx:1050},
+  {sbu:"Asia One Trading Company Ltd",receipts:2573793834,issues:-1473224233,rTx:114,iTx:1101},
+  {sbu:"Akij Shipping Line Ltd.",receipts:1191188887,issues:-169633838,rTx:5303,iTx:3922},
+  {sbu:"Fariq Agro Ltd.",receipts:1014507510,issues:400559693,rTx:1707,iTx:3174},
+  {sbu:"Akij Logistics Ltd.",receipts:855748196,issues:-4735956,rTx:1109,iTx:86},
+  {sbu:"Blue Pill Limited",receipts:696252753,issues:-925579,rTx:2561,iTx:2349},
+  {sbu:"Akij InfoTech Ltd.",receipts:571778443,issues:-195431,rTx:292,iTx:1209},
+  {sbu:"Akij Ocean Line Ltd.",receipts:794579020,issues:0,rTx:4734,iTx:0}
+];
+
+const NEG_STOCK = [
+  {sbu:"Akij Essentials Ltd.",item:"Semi Finished Goods",value:-29151383784394},
+  {sbu:"Akij Essentials Ltd.",item:"Finished Goods in Transit/Purchase",value:0},
+  {sbu:"Eurasia Trading Company Ltd",item:"Trading Goods",value:-420802148},
+  {sbu:"Direct Trading Company Ltd",item:"Trading Goods",value:-237392653},
+  {sbu:"Akij Commodities Ltd.",item:"Finished Goods in Stock",value:-141453952},
+  {sbu:"Akij Commodities Ltd.",item:"Trading Goods",value:-88249334},
+  {sbu:"Magnum Steel Industries Limited",item:"Finished Goods in Stock",value:-26984374},
+  {sbu:"Magnum Steel Industries Limited",item:"Raw Materials",value:-37082467},
+  {sbu:"Magnum Steel Industries Limited",item:"Semi Finished Goods",value:-440642},
+  {sbu:"Asia One Trading Company Ltd",item:"Trading Goods",value:-47896691},
+  {sbu:"Daily Trading Company Ltd",item:"Trading Goods",value:-40305008},
+  {sbu:"Bongo Traders Ltd",item:"Trading Goods",value:-30199003},
+  {sbu:"Bongo Traders Ltd",item:"Finished Goods in Stock",value:-5626023},
+  {sbu:"Bongo Traders Ltd",item:"Finished Goods in Transit/Purchase",value:0},
+  {sbu:"Fariq Agro Ltd.",item:"Semi Finished Goods",value:-21024084},
+  {sbu:"Hashem Rice Mills Ltd.",item:"Finished Goods in Stock",value:-43271567},
+  {sbu:"Akij Poly Fibre Industries Ltd.",item:"Trading Goods",value:-1},
+  {sbu:"M/S The Successors",item:"Semi Finished Goods",value:-2185}
+];
+
+const TOP_ITEMS = [
+  {sbu:"Akij Ispat Limited",item:"Finished Goods in Stock (MS Rod)",qty:349446,value:1974449041},
+  {sbu:"Akij Ispat Limited",item:"Raw Materials (Billet/Scrap)",qty:82400,value:1948961900},
+  {sbu:"Akij Ispat Limited",item:"Semi Finished Goods",qty:1950,value:40795935},
+  {sbu:"Akij Cement Company Ltd.",item:"Raw Materials (Clinker/Limestone)",qty:245000,value:611433978},
+  {sbu:"Akij Cement Company Ltd.",item:"Finished Goods in Stock (Cement)",qty:42500,value:244581848},
+  {sbu:"Akij Poly Fibre Industries Ltd.",item:"Raw Materials (PP Granules)",qty:1850,value:344964586},
+  {sbu:"Akij Poly Fibre Industries Ltd.",item:"Finished Goods (Bags)",qty:5200,value:21873581},
+  {sbu:"M/S The Successors",item:"Raw Materials (Stone)",qty:185000,value:238071033},
+  {sbu:"Akij Ready Mix Concrete Ltd",item:"Raw Materials (Aggregate)",qty:9500,value:126681689},
+  {sbu:"Akij Ready Mix Concrete Ltd",item:"Finished Goods (Concrete)",qty:3200,value:46675630},
+  {sbu:"Akij Building Solutions Limited",item:"Trading Goods (Bitumen)",qty:2800,value:119419235},
+  {sbu:"Akij Building Solutions Limited",item:"Raw Materials",qty:4500,value:60234308},
+  {sbu:"Akij Agro Feed Ltd.",item:"Raw Materials (Grains)",qty:28500,value:1026648551},
+  {sbu:"Akij Agro Feed Ltd.",item:"Trading Goods",qty:8500,value:247037456},
+  {sbu:"Akij Light Engineering Limited",item:"Raw Materials (Aluminum)",qty:12500,value:342242371},
+  {sbu:"Hashem Rice Mills Ltd.",item:"Raw Materials (Paddy)",qty:52000,value:1469249549},
+  {sbu:"Fariq Agro Ltd.",item:"Raw Materials",qty:7800,value:208379015},
+  {sbu:"AKIJ LifeCare Ltd.",item:"Trading Goods (Pharma)",qty:4500,value:97154245},
+  {sbu:"Akij InfoTech Ltd.",item:"Trading Goods (IT)",qty:2200,value:126832355},
+  {sbu:"AKIJ Automobile Industries Ltd.",item:"Trading Goods (Vehicles)",qty:22,value:56678269},
+  {sbu:"AKIJ Telecom Limited",item:"Trading Goods (Telecom)",qty:1800,value:47416827},
+  {sbu:"ARL Traders Ltd.",item:"Trading Goods",qty:1200,value:40050336},
+  {sbu:"AKIJ Consumer Electronics Limited",item:"Trading Goods (Electronics)",qty:850,value:28447636},
+  {sbu:"Blue Pill Limited",item:"Trading Goods (Electronics)",qty:450,value:17808580}
+];
+
+var charts={};var activeTab='all';function fmt(v){if(Math.abs(v)>=10000000)return(v/10000000).toFixed(2)+' Cr';if(Math.abs(v)>=100000)return(v/100000).toFixed(2)+' Lac';return v.toLocaleString();}function fmtCr(v){return(v/10000000).toFixed(2)+' Cr';}
+
+
+function renderAll() {
+  var tNet=STOCK.reduce(function(s,x){return s+x.net;},0);
+  var tPos=STOCK.reduce(function(s,x){return s+x.pos;},0);
+  var tNeg=STOCK.reduce(function(s,x){return s-x.neg;},0);
+  var tRec=RECEIPTS_ISSUES.reduce(function(s,x){return s+x.receipts;},0);
+  var tIss=RECEIPTS_ISSUES.reduce(function(s,x){return s+x.issues;},0);
+  var posSBU=STOCK.filter(function(x){return x.net>0;});
+  var negSBU=STOCK.filter(function(x){return x.net<0;});
+
+  var h='';
+  h+='<div class="kpi-row">';
+  h+=kpi('#0EA5A4',STOCK.length,'Total SBUs','With inventory data');
+  h+=kpi('#10B981',posSBU.length,'Positive SBUs','Net stock > 0');
+  h+=kpi('#EF4444',negSBU.length,'Negative SBUs','Net stock < 0');
+  h+=kpi('#FBBF24',fmt(tNet),'Net Stock Value','All SBUs combined');
+  h+=kpi('#57C3FF',RECEIPTS_ISSUES.length,'Active WMS SBUs','With receipts/issues');
+  h+='</div>';
+
+  h+='<div class="kpi-row">';
+  h+=kpi('#10B981',fmt(tPos),'Total Positive Value','Gross inflow');
+  h+=kpi('#EF4444',fmt(Math.abs(tNeg)),'Total Negative Value','Adj & issues');
+  h+=kpi('#9A91FB',fmtCr(tRec),'Total Receipts (WMS)','Inbound value');
+  h+=kpi('#FDB52A',fmtCr(Math.abs(tIss)),'Total Issues (WMS)','Outbound value');
+  h+=kpi('#85DECB',NEG_STOCK.length,'Negative GL Items','Unique negative positions');
+  h+='</div>';
+
+  h+='<div class="chart-row">';
+  h+='<div class="chart-box"><h3>Net Stock Value by SBU (Top 12)</h3><div class="chart-inner"><canvas id="c1"></canvas></div></div>';
+  h+='<div class="chart-box"><h3>Receipts vs Issues by SBU (Top 10)</h3><div class="chart-inner"><canvas id="c2"></canvas></div></div>';
+  h+='</div>';
+
+  h+='<div class="chart-row">';
+  h+='<div class="chart-box"><h3>Positive vs Negative Stock Distribution</h3><div class="chart-inner"><canvas id="c3"></canvas></div></div>';
+  h+='<div class="chart-box"><h3>Item-wise Stock Value (Top 10 Items)</h3><div class="chart-inner"><canvas id="c4"></canvas></div></div>';
+  h+='</div>';
+
+  h+='<div class="tabs"><span class="tab active" onclick="filterTab('+"'all'"+',this)">All SBUs</span><span class="tab" onclick="filterTab('+"'positive'"+',this)">Positive Stock</span><span class="tab" onclick="filterTab('+"'negative'"+',this)">Negative Stock</span></div>';
+
+  h+='<div class="tbl-box"><h3>Total Stock Value - All Business Concerns</h3><div class="tbl-scroll"><table><thead><tr><th>#</th><th>SBU</th><th>Category</th><th>Net Stock Value (BDT)</th><th>Gross Positive</th><th>Gross Negative</th><th>Status</th></tr></thead><tbody id="tb1">';
+  STOCK.sort(function(a,b){return b.net-a.net;}).forEach(function(x,i){
+    var cls=x.net>=0?'badge-green':'badge-red';
+    var st=x.net>=0?'Positive':'Negative';
+    h+='<tr data-cat="'+(x.net>=0?'positive':'negative')+'" data-search="'+(x.sbu+' '+x.ncat).toLowerCase()+'">';
+    h+='<td style="color:var(--t3)">'+(i+1)+'</td>';
+    h+='<td style="font-weight:500;color:var(--t1)">'+x.sbu+'</td>';
+    h+='<td><span class="badge badge-teal">'+x.ncat+'</span></td>';
+    h+='<td style="font-weight:700;color:'+(x.net>=0?'var(--green)':'var(--red)')+'">'+Math.abs(x.net).toLocaleString()+'</td>';
+    h+='<td style="color:var(--green)">'+x.pos.toLocaleString()+'</td>';
+    h+='<td style="color:var(--red)">'+x.neg.toLocaleString()+'</td>';
+    h+='<td><span class="badge '+cls+'">'+st+'</span></td>';
+    h+='</tr>';
+  });
+  h+='<tr style="font-weight:700;background:rgba(14,165,164,0.06)"><td colspan="3" style="text-align:right;padding:10px">NET TOTAL</td><td style="color:'+(tNet>=0?'var(--green)':'var(--red)')+'">'+tNet.toLocaleString()+'</td><td style="color:var(--green)">'+tPos.toLocaleString()+'</td><td style="color:var(--red)">'+Math.abs(tNeg).toLocaleString()+'</td><td></td></tr>';
+  h+='</tbody></table></div></div>';
+
+  document.getElementById('content').innerHTML=h;
+
+  setTimeout(function(){
+    Object.keys(charts).forEach(function(k){if(charts[k])charts[k].destroy();});
+    var C=['#0EA5A4','#FBBF24','#57C3FF','#9A91FB','#10B981','#EF4444','#FDB52A','#85DECB','#6C72FF','#003333','#007f7f','#126962'];
+
+    if(document.getElementById('c1')){
+      var top=STOCK.slice().sort(function(a,b){return b.net-a.net;}).slice(0,12);
+      charts.c1=new Chart(document.getElementById('c1'),{type:'bar',indexAxis:'y',data:{labels:top.map(function(x){return x.sbu.substring(0,25);}),datasets:[{label:'Net Value (Cr)',data:top.map(function(x){return x.net/10000000;}),backgroundColor:top.map(function(x,i){return x.net>=0?C[i%12]+'99':'#EF444499';}),borderColor:top.map(function(x,i){return x.net>=0?C[i%12]:'#EF4444';}),borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(52,59,79,0.3)'},ticks:{color:'#898da5',font:{size:10},callback:function(v){return v+' Cr'}}},y:{grid:{display:false},ticks:{color:'#898da5',font:{size:9}}}}}});
+    }
+    if(document.getElementById('c2')){
+      var top2=RECEIPTS_ISSUES.slice().sort(function(a,b){return (b.receipts+Math.abs(b.issues))-(a.receipts+Math.abs(a.issues));}).slice(0,10);
+      charts.c2=new Chart(document.getElementById('c2'),{type:'bar',data:{labels:top2.map(function(x){return x.sbu.substring(0,20);}),datasets:[{label:'Receipts',data:top2.map(function(x){return x.receipts/10000000;}),backgroundColor:'rgba(16,185,129,0.7)',borderColor:'#10B981',borderWidth:1},{label:'Issues',data:top2.map(function(x){return Math.abs(x.issues)/10000000;}),backgroundColor:'rgba(239,68,68,0.7)',borderColor:'#EF4444',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{color:'#898da5',font:{size:10}}}},scales:{x:{grid:{color:'rgba(52,59,79,0.3)'},ticks:{color:'#898da5',font:{size:7},maxRotation:45}},y:{grid:{color:'rgba(52,59,79,0.3)'},ticks:{color:'#898da5',font:{size:10},callback:function(v){return v+' Cr'}}}}}});
+    }
+    if(document.getElementById('c3')){
+      var pTotal=STOCK.reduce(function(s,x){return s+(x.net>0?x.net:0);},0);
+      var nTotal=Math.abs(STOCK.reduce(function(s,x){return s+(x.net<0?x.net:0);},0));
+      charts.c3=new Chart(document.getElementById('c3'),{type:'doughnut',data:{labels:['Positive Stock','Negative Stock'],datasets:[{data:[pTotal,nTotal],backgroundColor:['rgba(16,185,129,0.7)','rgba(239,68,68,0.7)'],borderColor:['#10B981','#EF4444'],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#898da5',font:{size:10}}},tooltip:{callbacks:{label:function(c){return 'BDT '+c.raw.toLocaleString()}}}}}});
+    }
+    if(document.getElementById('c4')){
+      charts.c4=new Chart(document.getElementById('c4'),{type:'bar',indexAxis:'y',data:{labels:TOP_ITEMS.map(function(x){return x.item.substring(0,30);}),datasets:[{label:'Value (Cr)',data:TOP_ITEMS.map(function(x){return x.value/10000000;}),backgroundColor:C.slice(0,10).map(function(c){return c+'99'}),borderColor:C.slice(0,10),borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(52,59,79,0.3)'},ticks:{color:'#898da5',font:{size:10},callback:function(v){return v+' Cr'}}},y:{grid:{display:false},ticks:{color:'#898da5',font:{size:9}}}}}});
+    }
+  },100);
+}
+
+function kpi(c,v,l,s){return '<div class="kpi"><div class="lbl">'+l+'</div><div class="val" style="color:'+c+'">'+v+'</div><div class="sub">'+s+'</div></div>';}
+
+function filterTab(t,el){activeTab=t;document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active');});if(el)el.classList.add('active');var rows=document.querySelectorAll('#tb1 tr');rows.forEach(function(r){if(t==='all')r.style.display='';else r.style.display=r.getAttribute('data-cat')===t?'':'none';});filterAll();}
+
+function filterAll(){var q=(document.getElementById('globalSearch')||{}).value||'';q=q.toLowerCase();var rows=document.querySelectorAll('#tb1 tr');rows.forEach(function(r){var d=r.getAttribute('data-search');var show=(!q||(d&&d.indexOf(q)>=0));if(activeTab!=='all')show=show&&r.getAttribute('data-cat')===activeTab;r.style.display=show?'':'none';});}
+
+
+function showNegativeStock() {
+  var tNeg=NEG_STOCK.reduce(function(s,x){return s+(x.value<0?x.value:0);},0);
+  var h='';
+  h+='<div class="kpi-row">';
+  h+=kpi('#EF4444',NEG_STOCK.length,'Negative GL Items','Unique positions');
+  h+=kpi('#FDB52A',fmt(Math.abs(tNeg)),'Total Negative Value','GL Stock < 0');
+  h+=kpi('#57C3FF',(new Set(NEG_STOCK.map(function(x){return x.sbu;}))).size,'Affected SBUs','With negative stock');
+  h+=kpi('#9A91FB',NEG_STOCK.filter(function(x){return x.value<0;}).length,'Active Negative','Value < 0');
+  h+='</div>';
+  h+='<div class="tbl-box"><h3>Negative Stock Items - All Business Concerns</h3><div class="tbl-scroll"><table><thead><tr><th>#</th><th>SBU</th><th>Item / GL Category</th><th>Value (BDT)</th><th>Impact</th></tr></thead><tbody>';
+  NEG_STOCK.sort(function(a,b){return a.value-b.value;}).forEach(function(x,i){
+    h+='<tr>';
+    h+='<td style="color:var(--t3)">'+(i+1)+'</td>';
+    h+='<td style="font-weight:500;color:var(--t1)">'+x.sbu+'</td>';
+    h+='<td>'+x.item+'</td>';
+    h+='<td class="neg">'+x.value.toLocaleString()+'</td>';
+    h+='<td><span class="badge '+(Math.abs(x.value)>100000000?'badge-red':'badge-orange')+'">'+(Math.abs(x.value)>100000000?'High Impact':'Low Impact')+'</span></td>';
+    h+='</tr>';
+  });
+  h+='<tr style="font-weight:700;background:rgba(239,68,68,0.05)"><td colspan="3" style="text-align:right;padding:10px">TOTAL NEGATIVE</td><td class="neg">'+tNeg.toLocaleString()+'</td><td></td></tr>';
+  h+='</tbody></table></div></div>';
+  document.getElementById('content').innerHTML=h;
+}
+
+function showReceiptsIssues() {
+  var tRec=RECEIPTS_ISSUES.reduce(function(s,x){return s+x.receipts;},0);
+  var tIss=RECEIPTS_ISSUES.reduce(function(s,x){return s+x.issues;},0);
+  var h='';
+  h+='<div class="kpi-row">';
+  h+=kpi('#10B981',fmtCr(tRec),'Total Receipts','Inbound value');
+  h+=kpi('#EF4444',fmtCr(Math.abs(tIss)),'Total Issues','Outbound value');
+  h+=kpi('#57C3FF',RECEIPTS_ISSUES.reduce(function(s,x){return s+x.rTx;},0),'Receipt Txns','WMS transactions');
+  h+=kpi('#FDB52A',RECEIPTS_ISSUES.reduce(function(s,x){return s+x.iTx;},0),'Issue Txns','WMS transactions');
+  h+='</div>';
+  h+='<div class="chart-row">';
+  h+='<div class="chart-box"><h3>Receipts vs Issues by SBU</h3><div class="chart-inner"><canvas id="c5"></canvas></div></div>';
+  h+='<div class="chart-box"><h3>Transaction Count by SBU</h3><div class="chart-inner"><canvas id="c6"></canvas></div></div>';
+  h+='</div>';
+  h+='<div class="tbl-box"><h3>Item-wise Total Receipts & Issues - All SBUs (Source: WMS)</h3><div class="tbl-scroll"><table><thead><tr><th>#</th><th>SBU</th><th>Total Receipts (BDT)</th><th>Total Issues (BDT)</th><th>Net (Rec - Iss)</th><th>Receipt Txns</th><th>Issue Txns</th></tr></thead><tbody>';
+  RECEIPTS_ISSUES.sort(function(a,b){return (b.receipts+Math.abs(b.issues))-(a.receipts+Math.abs(a.issues));}).forEach(function(x,i){
+    var net=x.receipts-Math.abs(x.issues);
+    h+='<tr>';
+    h+='<td style="color:var(--t3)">'+(i+1)+'</td>';
+    h+='<td style="font-weight:500;color:var(--t1)">'+x.sbu+'</td>';
+    h+='<td style="color:var(--green);font-weight:600">'+x.receipts.toLocaleString()+'</td>';
+    h+='<td style="color:var(--red);font-weight:600">'+x.issues.toLocaleString()+'</td>';
+    h+='<td style="font-weight:600;color:'+(net>=0?'var(--green)':'var(--red)')+'">'+net.toLocaleString()+'</td>';
+    h+='<td>'+x.rTx.toLocaleString()+'</td>';
+    h+='<td>'+x.iTx.toLocaleString()+'</td>';
+    h+='</tr>';
+  });
+  h+='<tr style="font-weight:700;background:rgba(14,165,164,0.06)"><td colspan="2" style="text-align:right;padding:10px">TOTAL</td><td style="color:var(--green)">'+tRec.toLocaleString()+'</td><td style="color:var(--red)">'+tIss.toLocaleString()+'</td><td style="color:'+((tRec-Math.abs(tIss))>=0?'var(--green)':'var(--red)')+'">'+(tRec-Math.abs(tIss)).toLocaleString()+'</td><td colspan="2"></td></tr>';
+  h+='</tbody></table></div></div>';
+  document.getElementById('content').innerHTML=h;
+  setTimeout(function(){
+    if(document.getElementById('c5')){
+      var top5=RECEIPTS_ISSUES.slice().sort(function(a,b){return (b.receipts+Math.abs(b.issues))-(a.receipts+Math.abs(a.issues));}).slice(0,10);
+      new Chart(document.getElementById('c5'),{type:'bar',data:{labels:top5.map(function(x){return x.sbu.substring(0,20);}),datasets:[{label:'Receipts',data:top5.map(function(x){return x.receipts/10000000;}),backgroundColor:'rgba(16,185,129,0.7)',borderColor:'#10B981',borderWidth:1},{label:'Issues',data:top5.map(function(x){return Math.abs(x.issues)/10000000;}),backgroundColor:'rgba(239,68,68,0.7)',borderColor:'#EF4444',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{color:'#898da5',font:{size:10}}}},scales:{x:{grid:{color:'rgba(52,59,79,0.3)'},ticks:{color:'#898da5',font:{size:7},maxRotation:45}},y:{grid:{color:'rgba(52,59,79,0.3)'},ticks:{color:'#898da5',font:{size:10},callback:function(v){return v+' Cr'}}}}}});
+    }
+    if(document.getElementById('c6')){
+      var top6=RECEIPTS_ISSUES.slice().sort(function(a,b){return (b.rTx+b.iTx)-(a.rTx+a.iTx);}).slice(0,10);
+      new Chart(document.getElementById('c6'),{type:'bar',data:{labels:top6.map(function(x){return x.sbu.substring(0,20);}),datasets:[{label:'Receipt Txns',data:top6.map(function(x){return x.rTx;}),backgroundColor:'rgba(16,185,129,0.7)',borderColor:'#10B981',borderWidth:1},{label:'Issue Txns',data:top6.map(function(x){return x.iTx;}),backgroundColor:'rgba(239,68,68,0.7)',borderColor:'#EF4444',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{color:'#898da5',font:{size:10}}}},scales:{x:{grid:{color:'rgba(52,59,79,0.3)'},ticks:{color:'#898da5',font:{size:7},maxRotation:45}},y:{grid:{color:'rgba(52,59,79,0.3)'},ticks:{color:'#898da5',font:{size:10}}}}}});
+    }
+  },100);
+}
+
+function showCurrentStock() {
+  var tVal=TOP_ITEMS.reduce(function(s,x){return s+x.value;},0);
+  var h='';
+  h+='<div class="kpi-row">';
+  h+=kpi('#0EA5A4',TOP_ITEMS.length,'Top Items','Key inventory items');
+  h+=kpi('#10B981',fmt(tVal),'Total Value','Top items combined');
+  h+=kpi('#FBBF24',TOP_ITEMS.reduce(function(s,x){return s+x.qty;},0).toLocaleString(),'Total Qty','Aggregate quantity');
+  h+=kpi('#57C3FF',(new Set(TOP_ITEMS.map(function(x){return x.sbu;}))).size,'Unique SBUs','With key items');
+  h+='</div>';
+  h+='<div class="chart-row">';
+  h+='<div class="chart-box"><h3>Item-wise Stock Value</h3><div class="chart-inner"><canvas id="c7"></canvas></div></div>';
+  h+='<div class="chart-box"><h3>Item-wise Quantity</h3><div class="chart-inner"><canvas id="c8"></canvas></div></div>';
+  h+='</div>';
+  h+='<div class="tbl-box"><h3>Item-wise Current Stock & Value - All SBUs (Source: GL Accounting Journal)</h3><div class="tbl-scroll"><table><thead><tr><th>#</th><th>SBU</th><th>Item / Category</th><th>Approx Qty</th><th>Value (BDT)</th><th>Unit Price (Est)</th></tr></thead><tbody>';
+  TOP_ITEMS.sort(function(a,b){return b.value-a.value;}).forEach(function(x,i){
+    var up=x.qty>0?Math.round(x.value/x.qty):0;
+    h+='<tr>';
+    h+='<td style="color:var(--t3)">'+(i+1)+'</td>';
+    h+='<td style="font-weight:500;color:var(--t1)">'+x.sbu+'</td>';
+    h+='<td>'+x.item+'</td>';
+    h+='<td style="font-weight:600;color:var(--teal)">'+x.qty.toLocaleString()+'</td>';
+    h+='<td style="font-weight:600;color:var(--gold)">'+x.value.toLocaleString()+'</td>';
+    h+='<td style="color:var(--t3)">'+(up>0?up.toLocaleString():'-')+'</td>';
+    h+='</tr>';
+  });
+  h+='<tr style="font-weight:700;background:rgba(14,165,164,0.06)"><td colspan="4" style="text-align:right;padding:10px">TOTAL</td><td style="color:var(--gold)">'+tVal.toLocaleString()+'</td><td></td></tr>';
+  h+='</tbody></table></div></div>';
+  document.getElementById('content').innerHTML=h;
+  setTimeout(function(){
+    if(document.getElementById('c7')){
+      new Chart(document.getElementById('c7'),{type:'bar',indexAxis:'y',data:{labels:TOP_ITEMS.map(function(x){return x.item.substring(0,25);}),datasets:[{label:'Value (Cr)',data:TOP_ITEMS.map(function(x){return x.value/10000000;}),backgroundColor:['#0EA5A4','#FBBF24','#57C3FF','#9A91FB','#10B981','#EF4444','#FDB52A','#85DECB','#6C72FF','#003333','#007f7f','#126962','#0EA5A4','#FBBF24','#57C3FF','#9A91FB','#10B981','#EF4444','#FDB52A','#85DECB','#6C72FF','#003333','#007f7f','#126962'],borderColor:'#1d243c',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(52,59,79,0.3)'},ticks:{color:'#898da5',font:{size:10},callback:function(v){return v+' Cr'}}},y:{grid:{display:false},ticks:{color:'#898da5',font:{size:8}}}}}});
+    }
+    if(document.getElementById('c8')){
+      new Chart(document.getElementById('c8'),{type:'bar',indexAxis:'y',data:{labels:TOP_ITEMS.map(function(x){return x.item.substring(0,25);}),datasets:[{label:'Quantity',data:TOP_ITEMS.map(function(x){return x.qty;}),backgroundColor:['rgba(16,185,129,0.7)','rgba(14,165,164,0.7)','rgba(87,195,255,0.7)','rgba(154,145,251,0.7)','rgba(251,191,36,0.7)','rgba(239,68,68,0.7)','rgba(253,181,42,0.7)','rgba(133,222,203,0.7)','rgba(108,114,255,0.7)','rgba(0,51,51,0.7)','rgba(0,127,127,0.7)','rgba(18,105,98,0.7)','rgba(16,185,129,0.7)','rgba(14,165,164,0.7)','rgba(87,195,255,0.7)','rgba(154,145,251,0.7)','rgba(251,191,36,0.7)','rgba(239,68,68,0.7)','rgba(253,181,42,0.7)','rgba(133,222,203,0.7)','rgba(108,114,255,0.7)','rgba(0,51,51,0.7)','rgba(0,127,127,0.7)','rgba(18,105,98,0.7)'],borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(52,59,79,0.3)'},ticks:{color:'#898da5',font:{size:10}}},y:{grid:{display:false},ticks:{color:'#898da5',font:{size:8}}}}}});
+    }
+  },100);
+}
+
+function switchView(v){Object.keys(charts).forEach(function(k){if(charts[k])charts[k].destroy();});charts={};if(v==='overview')renderAll();else if(v==='negative')showNegativeStock();else if(v==='receipts')showReceiptsIssues();else if(v==='items')showCurrentStock();}
+
+
+document.addEventListener('DOMContentLoaded',function(){
+  var h='';
+  h+='<div class="tabs" style="margin-bottom:16px">';
+  h+='<span class="tab active" onclick="switchView('+"'overview'"+')">Overview</span>';
+  h+='<span class="tab" onclick="switchView('+"'negative'"+')">Negative Stock Items</span>';
+  h+='<span class="tab" onclick="switchView('+"'receipts'"+')">Receipts & Issues</span>';
+  h+='<span class="tab" onclick="switchView('+"'items'"+')">Item-wise Stock</span>';
+  h+='</div><div id="viewContent"></div>';
+  document.getElementById('content').insertAdjacentHTML('beforeend',h);
+  renderAll();
+});
+</script>
+</body>
+</html>

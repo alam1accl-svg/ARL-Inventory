@@ -1,0 +1,13 @@
+# Secrets / config - do NOT commit
+opencode.json
+logs/
+.opencode/master-record.json
+*.log
+
+# OS
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Node
+node_modules/

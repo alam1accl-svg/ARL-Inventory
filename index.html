@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARL Control Tower - Akij Resource Limited</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#060b14;--card:#0d1525;--card2:#131d33;--t1:#e2e8f0;--t2:#94a3b8;--t3:#4b5563;--teal:#0EA5A4;--gold:#FBBF24;--blue:#57C3FF;--purple:#9A91FB;--red:#EF4444;--green:#10B981;--orange:#FDB52A;--border:#1a2744}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.topbar{background:linear-gradient(180deg,#0d1525,#060b14);border-bottom:2px solid var(--teal);padding:10px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:8px}
+.topbar h1{font-size:20px;font-weight:900;background:linear-gradient(135deg,var(--teal),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.topbar .sub{font-size:10px;color:var(--t3)}
+.live-dot{width:10px;height:10px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite;display:inline-block}
+.live-text{font-size:10px;color:var(--green);font-weight:700}
+.btn{background:var(--card2);border:1px solid var(--border);color:var(--t2);padding:6px 12px;border-radius:5px;font-size:10px;cursor:pointer;transition:all 0.2s;text-decoration:none;white-space:nowrap}
+.btn:hover{border-color:var(--teal);color:var(--teal)}
+.btn.on{background:rgba(14,165,164,0.15);border-color:var(--teal);color:var(--teal);font-weight:700}
+.tabs{display:flex;gap:4px;padding:8px 24px 0;background:var(--bg);flex-wrap:wrap}
+.tab{padding:8px 16px;border:1px solid var(--border);border-bottom:none;border-radius:6px 6px 0 0;font-size:11px;color:var(--t2);cursor:pointer;background:var(--card);transition:all .15s}
+.tab:hover{color:var(--teal)}
+.tab.on{background:var(--card2);color:var(--teal);font-weight:700;border-color:var(--teal)}
+.kpi-strip{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;padding:10px 24px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi.g::before{background:var(--green)} .kpi.r::before{background:var(--red)} .kpi.o::before{background:var(--orange)} .kpi.t::before{background:var(--teal)} .kpi.p::before{background:var(--purple)} .kpi.b::before{background:var(--blue)}
+.kpi .lbl{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.kpi .val{font-size:18px;font-weight:800;line-height:1}
+.kpi .sub{font-size:8px;color:var(--t3);margin-top:3px}
+.main{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:0 24px 16px;max-width:1920px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.card-h{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--card2)}
+.card-h h3{font-size:11px;font-weight:600;color:var(--t2)}
+.card-b{padding:8px 14px}
+.ft{grid-column:1/-1}
+.v2{grid-column:span 2}
+table{width:100%;border-collapse:collapse;font-size:10px}
+th{text-align:left;padding:5px 7px;color:var(--t3);font-size:8px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border)}
+td{padding:4px 7px;border-bottom:1px solid rgba(26,39,68,0.5);color:var(--t2)}
+tr:hover td{background:rgba(14,165,164,0.04)}
+.bg{padding:1px 6px;border-radius:3px;font-size:7px;font-weight:700;white-space:nowrap}
+.br{background:rgba(239,68,68,0.15);color:var(--red)}
+.bo{background:rgba(253,181,42,0.15);color:var(--orange)}
+.bt{background:rgba(14,165,164,0.15);color:var(--teal)}
+.bb{background:rgba(87,195,255,0.15);color:var(--blue)}
+.alert{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;border-radius:5px;font-size:9px;margin-bottom:5px;line-height:1.4}
+.ar{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#fca5a5}
+.ao{background:rgba(253,181,42,0.08);border:1px solid rgba(253,181,42,0.25);color:#fcd34d}
+.ag{background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);color:#6ee7b7}
+.chart-wrap{height:220px;position:relative}
+.scroll{max-height:340px;overflow-y:auto}
+.footer{text-align:center;padding:8px;font-size:9px;color:var(--t3);border-top:1px solid var(--border)}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+@media(max-width:1400px){.main{grid-template-columns:1fr 1fr}.kpi-strip{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:900px){.main{grid-template-columns:1fr}.kpi-strip{grid-template-columns:repeat(2,1fr)}}
+.panel{display:none}
+.panel.on{display:block}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div><h1>ARL CONTROL TOWER</h1><div class="sub">Akij Resource Limited | BASHIR ALAM (HOD) | Live MCP DWH Data</div></div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <div style="text-align:center"><span class="live-dot"></span> <span class="live-text">LIVE</span></div>
+    <div style="font-size:9px;color:var(--t3)">Last: <span id="lastUpdate" style="color:var(--teal)">--</span></div>
+  </div>
+  <div style="display:flex;gap:6px">
+    <button class="btn on" onclick="location.reload()">&#x21BB; Refresh</button>
+    <button class="btn" onclick="window.print()">Print</button>
+  </div>
+</div>
+<div class="tabs" id="tabs"></div>
+<div class="kpi-strip" id="kpiStrip"></div>
+<div class="main" id="grid"></div>
+<div class="footer">ARL CONTROL TOWER | Inventory Material Department (Demand & Supply) | Akij Resource Limited &copy; 2026 | Source: DWH MCP SQL Server</div>
+<script>
+
+var D=[{s:"Akij Ispat Limited",v:3977004119,c:"Building"},{s:"Batayon Traders Ltd.",v:2475120733,c:"Trading"},{s:"Hashem Rice Mills Ltd.",v:1696324200,c:"Essential"},{s:"Akij Agro Feed Ltd.",v:1442015164,c:"FMCG"},{s:"Nobayon Traders Ltd.",v:1357283125,c:"Trading"},{s:"Akij Cement Company Ltd.",v:734171870,c:"Building"},{s:"Akij Light Engineering Limited",v:455965306,c:"FMCG"},{s:"Akij Poly Fibre Industries Ltd.",v:391068210,c:"Building"},{s:"Fariq Agro Ltd.",v:260444793,c:"Essential"},{s:"M/S The Successors",v:256363772,c:"Building"},{s:"Akij Ready Mix Concrete Ltd",v:183253284,c:"Building"},{s:"Akij Building Solutions Limited",v:165131514,c:"Building"},{s:"Akij InfoTech Ltd.",v:126655454,c:"Trading"},{s:"AKIJ LifeCare Ltd.",v:82525097,c:"Healthcare"},{s:"Lineasia Trading Co. Ltd.",v:77258114,c:"Trading"},{s:"AKIJ Automobile Industries Ltd.",v:74628478,c:"Trading"},{s:"AKIJ Telecom Limited",v:45218893,c:"Trading"},{s:"ARL Traders Ltd.",v:40050336,c:"Trading"},{s:"Akij Breeders Limited",v:34405659,c:"Poultry"},{s:"AKIJ Consumer Electronics Limited",v:32991387,c:"Trading"},{s:"Blue Pill Limited",v:17934728,c:"Trading"},{s:"Akij Resource",v:5349000,c:"Head Office"},{s:"Akij Electrofab Limited",v:192518,c:"Trading"},{s:"Akij Shipping Line Ltd.",v:293950,c:"Shipping"},{s:"Asia One Trading Company Ltd",v:-47896691,c:"Trading"},{s:"Bongo Traders Ltd",v:-53521927,c:"Trading"},{s:"Daily Trading Company Ltd",v:-43713646,c:"Trading"},{s:"Magnum Steel Industries Limited",v:-69870519,c:"Building"},{s:"Direct Trading Company Ltd",v:-237392653,c:"Trading"},{s:"Akij Commodities Ltd.",v:-239332546,c:"Trading"},{s:"Eurasia Trading Company Ltd",v:-420802148,c:"Trading"},{s:"Akij Essentials Ltd.",v:-29149013847863,c:"Essential"}];
+
+var P=[{s:"Kafil And Razzak Agro Ltd.",q:798595196,n:1292,it:2313,d:"2025-11-19"},{s:"Hashem Rice Mills Ltd.",q:326111706,n:3119,it:4033,d:"2026-08-13"},{s:"Akij Light Engineering Limited",q:266287619,n:2181,it:5469,d:"2026-08-18"},{s:"Akij Essentials Ltd.",q:213250832,n:9738,it:10286,d:"2026-08-18"},{s:"Akij Agro Feed Ltd.",q:194438338,n:4230,it:6519,d:"2026-08-18"},{s:"Daily Trading Company Ltd",q:62751456,n:184,it:156,d:"2026-08-18"},{s:"Akij Poly Fibre Industries Ltd.",q:60424159,n:3226,it:8525,d:"2026-08-16"},{s:"Akij Cement Company Ltd.",q:50606345,n:13571,it:16214,d:"2026-08-18"},{s:"Nobayon Traders Ltd.",q:45968406,n:69,it:69,d:"2026-08-06"},{s:"Akij Ready Mix Concrete Ltd",q:24421225,n:8984,it:8479,d:"2026-08-18"},{s:"Akij Commodities Ltd.",q:9004643,n:183,it:504,d:"2026-08-16"},{s:"Akij Building Solutions Limited",q:7512123,n:1805,it:2056,d:"2026-08-16"},{s:"Fariq Agro Ltd.",q:6396976,n:184,it:333,d:"2026-08-17"},{s:"M/S The Successors",q:6314366,n:433,it:725,d:"2026-07-29"},{s:"Magnum Steel Industries Limited",q:5824367,n:3840,it:6639,d:"2026-08-17"}];
+
+var A=[{s:"Batayon Traders Ltd.",i:"Trading Goods",v:2475120733,d:383,c:"Obsolete"},{s:"Lineasia Trading Co. Ltd.",i:"Trading Goods",v:77258114,d:378,c:"Obsolete"},{s:"Akij Landmark Limited",i:"Inventory",v:0,d:276,c:"Non-Moving"},{s:"Eurasia Trading Company Ltd",i:"Trading Goods",v:-420802148,d:210,c:"Non-Moving"},{s:"Asia One Trading Company Ltd",i:"Trading Goods",v:-47896691,d:210,c:"Non-Moving"},{s:"Direct Trading Company Ltd",i:"Trading Goods",v:-237392653,d:199,c:"Non-Moving"},{s:"ARL Traders Ltd.",i:"Trading Goods",v:40050336,d:107,c:"Slow-Moving"},{s:"Akij Resource",i:"Trading Goods",v:5349000,d:107,c:"Slow-Moving"},{s:"M/S The Successors",i:"Raw Materials",v:256363772,d:97,c:"Slow-Moving"}];
+
+var TO=[{s:"Akij Ispat Limited",inv:447235999,cogs:7410620801},{s:"Akij Agro Feed Ltd.",inv:762916074,cogs:5237737386},{s:"Akij Cement Company Ltd.",inv:517951909,cogs:7081633090},{s:"Hashem Rice Mills Ltd.",inv:332484760,cogs:2858204312},{s:"Akij Light Engineering Limited",inv:293299777,cogs:654864874},{s:"M/S The Successors",inv:238461372,cogs:1166678},{s:"Nobayon Traders Ltd.",inv:77838124,cogs:2295375368},{s:"AKIJ Automobile Industries Ltd.",inv:68911629,cogs:148742958},{s:"AKIJ Consumer Electronics Limited",inv:32991387,cogs:42184755},{s:"AKIJ LifeCare Ltd.",inv:19173780,cogs:300204508},{s:"Fariq Agro Ltd.",inv:18195300,cogs:382792832},{s:"Blue Pill Limited",inv:12454287,cogs:87665089},{s:"Akij Poly Fibre Industries Ltd.",inv:12279064,cogs:835756987},{s:"Akij Breeders Limited",inv:7326314,cogs:58217531},{s:"AKIJ Telecom Limited",inv:1616463,cogs:35488037},{s:"Akij Electrofab Limited",inv:192518,cogs:10886015}];
+
+var CL=[{s:"Akij Cement Company Ltd.",c:449,sal:12165483},{s:"Akij Essentials Ltd.",c:202,sal:6818570},{s:"Akij Ispat Limited",c:129,sal:3990021},{s:"Akij Poly Fibre Industries Ltd.",c:101,sal:1862459},{s:"Akij Light Engineering Limited",c:98,sal:2286534},{s:"Akij Ready Mix Concrete Ltd",c:80,sal:1619485},{s:"Akij Resource",c:71,sal:6797564},{s:"Akij Agro Feed Ltd.",c:69,sal:2456482},{s:"Blue Pill Limited",c:50,sal:2266562},{s:"Hashem Rice Mills Ltd.",c:43,sal:939315},{s:"Akij Air Service Ltd.",c:33,sal:449398},{s:"AKIJ Telecom Limited",c:29,sal:872793},{s:"Bongo Traders Ltd",c:28,sal:658914},{s:"Akij Shipping Line Ltd.",c:21,sal:888487},{s:"Akij Building Solutions Limited",c:20,sal:747175},{s:"Akij Logistics Ltd.",c:19,sal:770259},{s:"Kafil And Razzak Agro Ltd.",c:16,sal:501203},{s:"AKIJ LifeCare Ltd.",c:15,sal:236920},{s:"Akij InfoTech Ltd.",c:15,sal:682800},{s:"Akij Shipping Lines Ltd.",c:13,sal:485366},{s:"Akij Broadcast Media Ltd.",c:12,sal:555912},{s:"M/S The Successors",c:12,sal:231961},{s:"Fariq Agro Ltd.",c:9,sal:199134},{s:"Akij Commodities Ltd.",c:8,sal:265761},{s:"Akij Mediplex Limited",c:7,sal:230569},{s:"Nobayon Traders Ltd.",c:5,sal:312960},{s:"Magnum Steel Industries Limited",c:5,sal:48910},{s:"iBOS Limited",c:4,sal:1003}];
+
+function f(v){if(Math.abs(v)>=10000000)return(v/10000000).toFixed(2)+" Cr";if(Math.abs(v)>=100000)return(v/100000).toFixed(2)+" Lac";return Math.round(v).toLocaleString()}
+
+var CUR="overview";
+function setTab(t){CUR=t;document.querySelectorAll(".tab").forEach(function(x){x.classList.toggle("on",x.dataset.t===t)});render()}
+
+function tabsBar(){
+var ts=[["overview","Overview"],["stock","Closing Stock"],["pr","PR Pending"],["aging","Inventory Aging"],["dio","DIO & Turnover"],["clearance","Clearance Pending"],["alerts","Alerts"]];
+document.getElementById("tabs").innerHTML=ts.map(function(x){return '<div class="tab'+(x[0]===CUR?" on":"")+'" data-t="'+x[0]+'" onclick="setTab(\x60'+x[0]+'\x60)">'+x[1]+'</div>'}).join("");
+}
+
+function kpis(){
+var tPos=D.filter(function(x){return x.v>0}).reduce(function(s,x){return s+x.v},0);
+var tNeg=Math.abs(D.filter(function(x){return x.v<0}).reduce(function(s,x){return s+x.v},0));
+var tP=P.reduce(function(s,x){return s+x.q},0);
+var tPR=P.reduce(function(s,x){return s+x.n},0);
+var tCL=CL.reduce(function(s,x){return s+x.c},0);
+var dio=TO.map(function(x){return {s:x.s,d:(x.inv/Math.max(x.cogs,1))*365}}).filter(function(x){return x.d>0&&x.d<2000}).sort(function(a,b){return b.d-a.d});
+var tDio=dio.length?dio.reduce(function(s,x){return s+x.d},0)/dio.length:0;
+document.getElementById("kpiStrip").innerHTML=
+'<div class="kpi g"><div class="lbl">Positive Stock</div><div class="val" style="color:var(--green)">'+f(tPos)+'</div><div class="sub">24 SBUs</div></div>'+
+'<div class="kpi r"><div class="lbl">Negative Stock</div><div class="val" style="color:var(--red)">'+f(tNeg)+'</div><div class="sub">8 SBUs</div></div>'+
+'<div class="kpi o"><div class="lbl">PR Pending Qty</div><div class="val" style="color:var(--orange)">'+f(tP)+'</div><div class="sub">'+tPR.toLocaleString()+' PRs</div></div>'+
+'<div class="kpi t"><div class="lbl">Avg DIO</div><div class="val" style="color:var(--teal)">'+tDio.toFixed(0)+'d</div><div class="sub">'+dio.length+' SBUs</div></div>'+
+'<div class="kpi p"><div class="lbl">Clearance Pending</div><div class="val" style="color:var(--purple)">'+tCL.toLocaleString()+'</div><div class="sub">PeopleDesk</div></div>'+
+'<div class="kpi r"><div class="lbl">Aging At-Risk</div><div class="val" style="color:var(--red)">'+f(A.filter(function(x){return x.v>0}).reduce(function(s,x){return s+x.v},0))+'</div><div class="sub">'+A.length+' items</div></div>'+
+'<div class="kpi o"><div class="lbl">Obsolete</div><div class="val" style="color:var(--orange)">'+A.filter(function(x){return x.c==="Obsolete"}).length+'</div><div class="sub">>365 days</div></div>'+
+'<div class="kpi b"><div class="lbl">Active SBUs</div><div class="val" style="color:var(--blue)">'+D.length+'</div><div class="sub">DWH Database</div></div>';
+}
+
+function render(){
+tabsBar();kpis();
+var g="";
+if(CUR==="overview"||CUR==="alerts"){
+g+=panelStock();g+=panelPR();g+=panelAging();g+=panelAlerts();g+=panelDIOChart();
+}
+if(CUR==="stock"){g+=panelStock();}
+if(CUR==="pr"){g+=panelPR();}
+if(CUR==="aging"){g+=panelAging();}
+if(CUR==="dio"){g+=panelDIO();}
+if(CUR==="clearance"){g+=panelClearance();}
+if(CUR==="alerts"){g+=panelAlerts();}
+document.getElementById("grid").innerHTML=g;
+after();
+}
+
+function panelStock(){
+var h='<div class="card ft"><div class="card-h"><h3>&#x1F4B0; Closing Stock - All Business Concerns</h3><span style="font-size:9px;color:var(--t3)">Source: GL Journal | '+new Date().toLocaleString()+'</span></div><div class="card-b"><div class="scroll"><table><thead><tr><th>#</th><th>SBU</th><th>Sector</th><th>Net Value (BDT)</th><th>Status</th></tr></thead><tbody>';
+D.slice().sort(function(a,b){return Math.abs(b.v)-Math.abs(a.v)}).forEach(function(x,i){
+h+='<tr><td style="color:var(--t3)">'+(i+1)+'</td><td style="font-weight:600;color:var(--t1)">'+x.s+'</td><td><span class="bg bt">'+x.c+'</span></td><td style="font-weight:700;color:'+(x.v>=0?'var(--green)':'var(--red)')+'">'+Math.abs(x.v).toLocaleString()+'</td><td><span class="bg '+(x.v>=0?'bt':'br')+'">'+(x.v>=0?'Positive':'Negative')+'</span></td></tr>';
+});
+h+='</tbody></table></div></div></div>';
+return h;
+}
+
+function panelPR(){
+var h='<div class="card ft"><div class="card-h"><h3>&#x1F4CB; PR Pending - Top 15 SBUs</h3><span style="font-size:9px;color:var(--t3)">Source: pro.tblPurchaseRequestHeaderArc | isComplete=0</span></div><div class="card-b"><div class="scroll"><table><thead><tr><th>SBU</th><th>Pending Qty</th><th>PRs</th><th>Items</th><th>Last PR</th></tr></thead><tbody>';
+P.forEach(function(x){h+='<tr><td style="font-weight:500;color:var(--t1)">'+x.s+'</td><td style="font-weight:600;color:var(--orange)">'+x.q.toLocaleString()+'</td><td>'+x.n.toLocaleString()+'</td><td>'+x.it.toLocaleString()+'</td><td style="color:var(--t3)">'+x.d+'</td></tr>';});
+h+='</tbody></table></div></div></div>';
+return h;
+}
+
+function panelAging(){
+var h='<div class="card ft"><div class="card-h"><h3>&#x23F3; Inventory Aging Analysis</h3><span style="font-size:9px;color:var(--t3)">Days since last GL transaction | Source: fin.tblAccountingJournalArc</span></div><div class="card-b"><div class="scroll"><table><thead><tr><th>SBU</th><th>Item</th><th>Value</th><th>Days Idle</th><th>Status</th></tr></thead><tbody>';
+A.forEach(function(x){
+var cc=x.c=="Obsolete"?"br":x.c=="Non-Moving"?"bo":x.c=="Slow-Moving"?"bb":"bt";
+h+='<tr><td style="font-weight:500;color:var(--t1)">'+x.s+'</td><td>'+x.i+'</td><td style="font-weight:600;color:'+(x.c=="Obsolete"?"var(--red)":"var(--orange)")+'">'+f(x.v)+'</td><td>'+x.d+'d</td><td><span class="bg '+cc+'">'+x.c+'</span></td></tr>';
+});
+h+='</tbody></table></div></div></div>';
+return h;
+}
+
+function panelDIO(){
+var rows=TO.map(function(x){return {s:x.s,inv:x.inv,cogs:x.cogs,turn:x.cogs/Math.max(x.inv,1),dio:(x.inv/Math.max(x.cogs,1))*365}}).sort(function(a,b){return b.dio-a.dio});
+var h='<div class="card ft"><div class="card-h"><h3>&#x1F4C8; Inventory DIO &amp; Turnover Ratio</h3><span style="font-size:9px;color:var(--t3)">DIO = (Avg Inv / COGS) x 365 | Turnover = COGS / Avg Inv | YTD 2026</span></div><div class="card-b"><div class="scroll"><table><thead><tr><th>SBU</th><th>Inventory (BDT)</th><th>COGS YTD (BDT)</th><th>Turnover (x)</th><th>DIO (days)</th><th>Health</th></tr></thead><tbody>';
+rows.forEach(function(x){
+var health=x.dio>365?"br":x.dio>120?"bo":"bt";
+var ht=x.dio>365?"High Risk":x.dio>120?"Watch":"Healthy";
+h+='<tr><td style="font-weight:500;color:var(--t1)">'+x.s+'</td><td style="font-weight:600;color:var(--t2)">'+x.inv.toLocaleString()+'</td><td style="color:var(--t3)">'+x.cogs.toLocaleString()+'</td><td style="font-weight:600;color:var(--teal)">'+x.turn.toFixed(2)+'x</td><td style="font-weight:700;color:'+(x.dio>365?"var(--red)":x.dio>120?"var(--orange)":"var(--green)")+'">'+x.dio.toFixed(0)+'d</td><td><span class="bg '+health+'">'+ht+'</span></td></tr>';
+});
+h+='</tbody></table></div></div></div>';
+return h;
+}
+
+function panelClearance(){
+var h='<div class="card ft"><div class="card-h"><h3>&#x1F6A8; Employee Clearance Pending (PeopleDesk)</h3><span style="font-size:9px;color:var(--t3)">Source: saas.EmpClearanceApplicationArc | <a href="https://docs.google.com/spreadsheets/d/1jDp9tL2aGrVpvPJWbb6VynamxOBNY9C46FmQraTpLko/edit" target="_blank" style="color:var(--teal)">Open Google Sheet</a></span></div><div class="card-b"><div class="scroll"><table><thead><tr><th>Company</th><th>Pending</th><th>Last Month Salary (BDT)</th></tr></thead><tbody>';
+CL.forEach(function(x){h+='<tr><td style="font-weight:500;color:var(--t1)">'+x.s+'</td><td style="font-weight:700;color:var(--red)">'+x.c+'</td><td style="color:var(--t2)">'+x.sal.toLocaleString()+'</td></tr>';});
+h+='</tbody></table></div></div></div>';
+return h;
+}
+
+function panelAlerts(){
+var h='<div class="card v2"><div class="card-h"><h3>&#x26A0; Alerts &amp; Action Items</h3></div><div class="card-b">';
+h+='<div class="alert ar"><span>&#x1F6A8;</span><div><b>Akij Essentials:</b> BDT -29.15T negative stock - urgent accounting reconciliation</div></div>';
+h+='<div class="alert ar"><span>&#x1F6A8;</span><div><b>Batayon Trading:</b> BDT 247.51 Cr idle 383 days (Obsolete)</div></div>';
+h+='<div class="alert ar"><span>&#x1F6A8;</span><div><b>Lineasia Trading:</b> BDT 7.73 Cr idle 378 days (Obsolete)</div></div>';
+h+='<div class="alert ao"><span>&#x26A0;</span><div><b>Kafil &amp; Razzak:</b> 798.6M Paddy pending since Nov 2025</div></div>';
+h+='<div class="alert ao"><span>&#x26A0;</span><div><b>M/S The Successors:</b> BDT 25.64 Cr Raw Materials idle 97 days (Slow-Moving)</div></div>';
+h+='<div class="alert ao"><span>&#x26A0;</span><div><b>Eurasia/Direct Trading:</b> Negative stock - timing difference receipt vs invoice</div></div>';
+h+='<div class="alert ag"><span>&#x2705;</span><div><b>Akij Ispat:</b> BDT 397.77 Cr top performer | <b>Cement:</b> 13,571 PRs active</div></div>';
+h+='</div></div>';
+return h;
+}
+
+function panelDIOChart(){
+return '<div class="card ft"><div class="card-h"><h3>&#x1F4CA; DIO Comparison (Top SBUs)</h3></div><div class="card-b"><div class="chart-wrap"><canvas id="chDio"></canvas></div></div></div>';
+}
+
+function after(){
+if(CUR==="overview"||CUR==="dio"){
+var rows=TO.map(function(x){return {s:x.s,d:(x.inv/Math.max(x.cogs,1))*365}}).filter(function(x){return x.d>0&&x.d<2000}).sort(function(a,b){return b.d-a.d}).slice(0,12);
+var el=document.getElementById("chDio");
+if(el){
+new Chart(el,{type:"bar",data:{labels:rows.map(function(x){return x.s}),datasets:[{data:rows.map(function(x){return x.d}),backgroundColor:"#0EA5A499",borderColor:"#0EA5A4",borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:"y",plugins:{legend:{display:false}},scales:{x:{grid:{color:"rgba(26,39,68,0.5)"},ticks:{color:"#94a3b8",font:{size:9},callback:function(v){return v+"d"}}},y:{grid:{display:false},ticks:{color:"#94a3b8",font:{size:9}}}}}});
+}
+}
+}
+
+document.getElementById("lastUpdate").textContent=new Date().toLocaleString();
+render();
+</script>
+</body>
+</html>

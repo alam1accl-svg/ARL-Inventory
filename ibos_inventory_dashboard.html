@@ -1,0 +1,141 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iBOS ERP - Inventory Document Dashboard | Akij Resource</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#060b14;--card:#0d1525;--card2:#131d33;--t1:#e2e8f0;--t2:#94a3b8;--t3:#4b5563;--teal:#0EA5A4;--gold:#FBBF24;--blue:#57C3FF;--purple:#9A91FB;--red:#EF4444;--green:#10B981;--orange:#FDB52A;--border:#1a2744}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--t1);min-height:100vh}
+.topbar{background:linear-gradient(180deg,#0d1525,#060b14);border-bottom:2px solid var(--teal);padding:10px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+.topbar h1{font-size:18px;font-weight:900;background:linear-gradient(135deg,var(--teal),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.topbar .sub{font-size:10px;color:var(--t3)}
+.btn{background:var(--card2);border:1px solid var(--border);color:var(--t2);padding:5px 10px;border-radius:5px;font-size:10px;cursor:pointer;transition:all 0.2s;text-decoration:none;white-space:nowrap}
+.btn:hover{border-color:var(--teal);color:var(--teal)}
+.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;padding:10px 24px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;text-align:center;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi.g::before{background:var(--green)} .kpi.r::before{background:var(--red)} .kpi.o::before{background:var(--orange)} .kpi.t::before{background:var(--teal)} .kpi.p::before{background:var(--purple)} .kpi.b::before{background:var(--blue)}
+.kpi .lbl{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.kpi .val{font-size:18px;font-weight:800;line-height:1}
+.kpi .sub{font-size:8px;color:var(--t3);margin-top:3px}
+.main{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 24px 16px;max-width:1800px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.card-h{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--card2)}
+.card-h h3{font-size:11px;font-weight:600;color:var(--t2)}
+.card-b{padding:8px 14px}
+.full{grid-column:1/-1}
+.chart-wrap{height:250px;position:relative}
+table{width:100%;border-collapse:collapse;font-size:10px}
+th{text-align:left;padding:5px 7px;color:var(--t3);font-size:8px;text-transform:uppercase;border-bottom:1px solid var(--border)}
+td{padding:4px 7px;border-bottom:1px solid rgba(26,39,68,0.5);color:var(--t2)}
+tr:hover td{background:rgba(14,165,164,0.04)}
+.badge{padding:1px 6px;border-radius:3px;font-size:7px;font-weight:700;white-space:nowrap}
+.br{background:rgba(239,68,68,0.15);color:var(--red)}
+.bg{background:rgba(16,185,129,0.15);color:var(--green)}
+.bo{background:rgba(253,181,42,0.15);color:var(--orange)}
+.bt{background:rgba(14,165,164,0.15);color:var(--teal)}
+.bb{background:rgba(87,195,255,0.15);color:var(--blue)}
+.scroll{max-height:300px;overflow-y:auto}
+.footer{text-align:center;padding:10px;font-size:9px;color:var(--t3);border-top:1px solid var(--border)}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+@media(max-width:1200px){.main{grid-template-columns:1fr}.kpi-row{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div><h1>iBOS ERP - Inventory Documents</h1><div class="sub">Akij Resource Limited | All Business Concerns | Source: DWH MCP SQL Server | Aug 12, 2026</div></div>
+  <div style="display:flex;gap:6px">
+    <a href="control_tower.html" class="btn">Control Tower</a>
+    <a href="pending_clearances.html" class="btn" style="background:rgba(239,68,68,0.12);border-color:var(--red);color:var(--red)">Pending (652)</a>
+    <button class="btn" onclick="window.print()">Print</button>
+  </div>
+</div>
+<div class="kpi-row" id="kpiRow"></div>
+<div class="main" id="grid"></div>
+<div class="footer">iBOS ERP Inventory Dashboard | Powered by MCP DWH SQL Server | Department: Inventory Material (Demand & Supply) | Akij Resource Limited &copy; 2026</div>
+<script>
+
+var D=[{t:"Received From Production",c:8578,q:3682706,a:29158387768485},{t:"Issue Inventory",c:57562,q:59372106,a:29154462685365},{t:"Receive Inventory",c:9999,q:78299342,a:5674909532},{t:"Transfer In",c:3925,q:28511199,a:3440533691},{t:"Service Receive",c:1516,q:1023609,a:426272048},{t:"Adjust Inventory",c:225,q:1963949,a:356513100},{t:"Asset Receive",c:114,q:981,a:105413663},{t:"Transfer Out",c:3824,q:-29229549,a:-3482437678},{t:"Issue Return",c:1,q:26,a:838}];
+
+var I=[{i:"Akij Cement (Bag)-CEM-II",m:7141,q:70614,v:16184263},{i:"Akij Cement (Bag)-CEM-II (A-M)",m:6183,q:71206,v:19648657},{i:"Cement Bulk PCC (RM)",m:4348,q:-2854,v:-19808447},{i:"Limestone 10-20 mm",m:3979,q:-15451,v:-61596736},{i:"Admixer (Chemical)",m:3789,q:-5547,v:-307688},{i:"Diesel",m:3053,q:-474881,v:-45196402},{i:"Broiler Grower (102) 50 Kg",m:2820,q:44,v:-68385},{i:"Layer Layer-1 (204) 50 Kg",m:2771,q:1120,v:2722450},{i:"Pakur Stone 10-20mm(RM)",m:2461,q:1463,v:7798693},{i:"Crushed Stone 10-20mm",m:2421,q:4,v:29677}];
+
+var A=[{s:"Magnum Steel Industries",a:2653,v:626118316394},{s:"Akij Ispat Limited",a:2490,v:126106684485},{s:"Akij Ready Mix Concrete",a:913,v:99973487575},{s:"Akij Essentials",a:2923,v:24944083887},{s:"Akij Poly Fibre",a:337,v:6419441262},{s:"Nobayon Traders",a:386,v:4978481810},{s:"Akij Commodities",a:98,v:4565746393},{s:"Akij Cement",a:1983,v:4412480709},{s:"Akij Agro Feed",a:966,v:4026331053},{s:"Blue Pill",a:81,v:1931558601}];
+
+var S=[{s:"Akij Cement",d:1179518,v:-2753162758452},{s:"Akij Ready Mix Concrete",d:503527,v:-1181072377418},{s:"Akij Essentials",d:272415,v:58718192750552},{s:"Akij Ispat",d:175807,v:528429082259},{s:"Akij Agro Feed",d:174578,v:35888831511},{s:"Hashem Rice Mills",d:76194,v:529456393442},{s:"Akij Poly Fibre",d:69770,v:-263193580468},{s:"Magnum Steel",d:69228,v:712714543258},{s:"AKIJ LifeCare",d:65671,v:107081130},{s:"Akij Light Eng",d:50757,v:1675612306},{s:"Daily Trading",d:37197,v:8766970228},{s:"M/S The Successors",d:32593,v:-207258716410},{s:"Akij Building Sol",d:27950,v:4369874105},{s:"Kafil & Razzak Agro",d:20057,v:64274860153},{s:"Bongo Traders",d:16079,v:7718328603}];
+
+function f(v){if(Math.abs(v)>=10000000)return(v/10000000).toFixed(2)+" Cr";if(Math.abs(v)>=100000)return(v/100000).toFixed(2)+" Lac";return v.toLocaleString()}
+function fK(v){return v.toLocaleString()}
+
+
+function build(){
+  var tDocs=D.reduce(function(s,x){return s+x.c},0);
+  var tQty=D.reduce(function(s,x){return s+Math.abs(x.q)},0);
+  var tAmt=D.reduce(function(s,x){return s+x.a},0);
+  var tAdj=A.length;
+  var tItems=I.reduce(function(s,x){return s+x.m},0);
+  var tSBU=S.length;
+
+  document.getElementById("kpiRow").innerHTML=
+    '<div class="kpi t"><div class="lbl">Total Documents (30d)</div><div class="val" style="color:var(--teal)">'+tDocs.toLocaleString()+'</div><div class="sub">'+D.length+' types</div></div>'+
+    '<div class="kpi g"><div class="lbl">Total Qty Moved (30d)</div><div class="val" style="color:var(--green)">'+fK(tQty)+'</div><div class="sub">Units</div></div>'+
+    '<div class="kpi p"><div class="lbl">Total Value (30d)</div><div class="val" style="color:var(--purple)">'+f(tAmt)+'</div><div class="sub">BDT</div></div>'+
+    '<div class="kpi o"><div class="lbl">Inventory Adjustments</div><div class="val" style="color:var(--orange)">'+A.reduce(function(s,x){return s+x.a},0).toLocaleString()+'</div><div class="sub">'+tAdj+' SBUs</div></div>'+
+    '<div class="kpi b"><div class="lbl">Active SBUs</div><div class="val" style="color:var(--blue)">'+tSBU+'</div><div class="sub">WMS transactions</div></div>'+
+    '<div class="kpi r"><div class="lbl">Top Items Moved</div><div class="val" style="color:var(--red)">'+tItems.toLocaleString()+'</div><div class="sub">Movements</div></div>';
+
+  var g="";
+
+  // Document Types Table
+  g+='<div class="card"><div class="card-h"><h3>&#x1F4C4; Document Types - Last 30 Days</h3></div><div class="card-b"><div class="scroll"><table><thead><tr><th>Doc Type</th><th>Count</th><th>Quantity</th><th>Value (BDT)</th></tr></thead><tbody>';
+  D.forEach(function(x){
+    var cc=x.a>=0?"var(--green)":"var(--red)";
+    g+='<tr><td style="font-weight:500;color:var(--t1)">'+x.t+'</td><td style="font-weight:600;color:var(--teal)">'+x.c.toLocaleString()+'</td><td>'+x.q.toLocaleString()+'</td><td style="font-weight:600;color:'+cc+'">'+f(x.a)+'</td></tr>';
+  });
+  g+='</tbody></table></div></div></div>';
+
+  // Top Items
+  g+='<div class="card"><div class="card-h"><h3>&#x1F4E6; Top Items by Movement (30d)</h3></div><div class="card-b"><div class="scroll"><table><thead><tr><th>Item</th><th>Movements</th><th>Qty</th><th>Value</th></tr></thead><tbody>';
+  I.forEach(function(x){
+    g+='<tr><td style="font-weight:500;color:var(--t1)">'+x.i+'</td><td style="font-weight:600;color:var(--teal)">'+x.m+'</td><td>'+fK(x.q)+'</td><td style="font-weight:600;color:'+(x.v>=0?"var(--green)":"var(--red)")+'">'+f(x.v)+'</td></tr>';
+  });
+  g+='</tbody></table></div></div></div>';
+
+  // Chart: Doc Types
+  g+='<div class="card full"><div class="card-h"><h3>&#x1F4CA; Document Distribution by Type</h3></div><div class="card-b"><div class="chart-wrap"><canvas id="ch1"></canvas></div></div></div>';
+
+  // Inventory Adjustments
+  g+='<div class="card"><div class="card-h"><h3>&#x2696; Inventory Adjustments by SBU</h3></div><div class="card-b"><div class="scroll"><table><thead><tr><th>SBU</th><th>Adjustments</th><th>Value (BDT)</th><th>Impact</th></tr></thead><tbody>';
+  A.forEach(function(x){
+    g+='<tr><td style="font-weight:500;color:var(--t1)">'+x.s+'</td><td style="font-weight:600;color:var(--orange)">'+x.a+'</td><td style="font-weight:600;color:'+(x.v>=0?"var(--green)":"var(--red)")+'">'+f(x.v)+'</td><td><span class="badge '+(x.v>=0?"bg":"br")+'">'+(x.v>=0?"Gain":"Loss")+'</span></td></tr>';
+  });
+  g+='</tbody></table></div></div></div>';
+
+  // Total Docs by SBU
+  g+='<div class="card"><div class="card-h"><h3>&#x1F3ED; Total Documents by SBU (All Time)</h3></div><div class="card-b"><div class="scroll"><table><thead><tr><th>SBU</th><th>Total Docs</th><th>Value (BDT)</th></tr></thead><tbody>';
+  S.forEach(function(x){
+    g+='<tr><td style="font-weight:500;color:var(--t1)">'+x.s+'</td><td style="font-weight:600;color:var(--teal)">'+x.d.toLocaleString()+'</td><td style="font-weight:600;color:'+(x.v>=0?"var(--green)":"var(--red)")+'">'+f(x.v)+'</td></tr>';
+  });
+  g+='</tbody></table></div></div></div>';
+
+  // Chart: SBU Docs
+  g+='<div class="card full"><div class="card-h"><h3>&#x1F4CA; Top SBUs by Document Count</h3></div><div class="card-b"><div class="chart-wrap"><canvas id="ch2"></canvas></div></div></div>';
+
+  document.getElementById("grid").innerHTML=g;
+
+  setTimeout(function(){
+    if(document.getElementById("ch1")){
+      new Chart(document.getElementById("ch1"),{type:"bar",data:{labels:D.map(function(x){return x.t}),datasets:[{label:"Documents",data:D.map(function(x){return x.c}),backgroundColor:["#0EA5A4","#EF4444","#10B981","#57C3FF","#FBBF24","#FDB52A","#9A91FB","#FFDBBB","#85DECB"].map(function(c){return c+"99"}),borderColor:["#0EA5A4","#EF4444","#10B981","#57C3FF","#FBBF24","#FDB52A","#9A91FB","#FFDBBB","#85DECB"],borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:"rgba(26,39,68,0.5)"},ticks:{color:"#94a3b8",font:{size:8},maxRotation:45}},y:{grid:{color:"rgba(26,39,68,0.5)"},ticks:{color:"#94a3b8",font:{size:9}}}}}});
+    }
+    if(document.getElementById("ch2")){
+      new Chart(document.getElementById("ch2"),{type:"bar",indexAxis:"y",data:{labels:S.slice(0,12).map(function(x){return x.s}),datasets:[{data:S.slice(0,12).map(function(x){return x.d}),backgroundColor:["#0EA5A4","#FBBF24","#57C3FF","#9A91FB","#10B981","#EF4444","#FDB52A","#85DECB","#6C72FF","#003333","#007f7f","#126962"].map(function(c){return c+"99"}),borderColor:["#0EA5A4","#FBBF24","#57C3FF","#9A91FB","#10B981","#EF4444","#FDB52A","#85DECB","#6C72FF","#003333","#007f7f","#126962"],borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:"rgba(26,39,68,0.5)"},ticks:{color:"#94a3b8",font:{size:9}}},y:{grid:{display:false},ticks:{color:"#94a3b8",font:{size:9}}}}}});
+    }
+  },100);
+}
+
+build();
+</script>
+</body>
+</html>

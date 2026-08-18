@@ -1,0 +1,177 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARL Control Tower - Akij Resource Limited</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#060b14;--card:#0d1525;--card2:#131d33;--t1:#e2e8f0;--t2:#94a3b8;--t3:#4b5563;--teal:#0EA5A4;--gold:#FBBF24;--blue:#57C3FF;--purple:#9A91FB;--red:#EF4444;--green:#10B981;--orange:#FDB52A;--border:#1a2744}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.topbar{background:linear-gradient(180deg,#0d1525,#060b14);border-bottom:2px solid var(--teal);padding:10px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+.topbar h1{font-size:20px;font-weight:900;background:linear-gradient(135deg,var(--teal),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.topbar .sub{font-size:10px;color:var(--t3)}
+.live-dot{width:10px;height:10px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite;display:inline-block}
+.live-text{font-size:10px;color:var(--green);font-weight:700}
+.refresh-timer{font-size:18px;font-weight:800;color:var(--teal);font-family:monospace;text-align:center}
+.btn{background:var(--card2);border:1px solid var(--border);color:var(--t2);padding:6px 12px;border-radius:5px;font-size:10px;cursor:pointer;transition:all 0.2s;text-decoration:none;white-space:nowrap}
+.btn:hover{border-color:var(--teal);color:var(--teal)}
+.btn-refresh{background:rgba(14,165,164,0.15);border-color:var(--teal);color:var(--teal);font-weight:700}
+.status-bar{display:flex;gap:16px;padding:6px 24px;background:var(--card);border-bottom:1px solid var(--border);font-size:9px;color:var(--t3)}
+.sdot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:4px}
+.sdot.on{background:var(--green);box-shadow:0 0 6px var(--green)}
+.sdot.warn{background:var(--orange);animation:pulse 2s infinite}
+.kpi-strip{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;padding:10px 24px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi.g::before{background:var(--green)} .kpi.r::before{background:var(--red)} .kpi.o::before{background:var(--orange)} .kpi.t::before{background:var(--teal)} .kpi.p::before{background:var(--purple)} .kpi.b::before{background:var(--blue)}
+.kpi .lbl{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.kpi .val{font-size:18px;font-weight:800;line-height:1}
+.kpi .sub{font-size:8px;color:var(--t3);margin-top:3px}
+.main{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:0 24px 16px;max-width:1920px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.card-h{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--card2)}
+.card-h h3{font-size:11px;font-weight:600;color:var(--t2)}
+.card-b{padding:8px 14px}
+.ft{grid-column:1/-1}
+.v2{grid-column:span 2}
+table{width:100%;border-collapse:collapse;font-size:10px}
+th{text-align:left;padding:5px 7px;color:var(--t3);font-size:8px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border)}
+td{padding:4px 7px;border-bottom:1px solid rgba(26,39,68,0.5);color:var(--t2)}
+tr:hover td{background:rgba(14,165,164,0.04)}
+.bg{padding:1px 6px;border-radius:3px;font-size:7px;font-weight:700;white-space:nowrap}
+.br{background:rgba(239,68,68,0.15);color:var(--red)}
+.bg{background:rgba(16,185,129,0.15);color:var(--green)}
+.bo{background:rgba(253,181,42,0.15);color:var(--orange)}
+.bt{background:rgba(14,165,164,0.15);color:var(--teal)}
+.bb{background:rgba(87,195,255,0.15);color:var(--blue)}
+.alert{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;border-radius:5px;font-size:9px;margin-bottom:5px;line-height:1.4}
+.ar{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#fca5a5}
+.ao{background:rgba(253,181,42,0.08);border:1px solid rgba(253,181,42,0.25);color:#fcd34d}
+.ag{background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);color:#6ee7b7}
+.chart-wrap{height:200px;position:relative}
+.scroll{max-height:250px;overflow-y:auto}
+.footer{text-align:center;padding:8px;font-size:9px;color:var(--t3);border-top:1px solid var(--border)}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+@media(max-width:1400px){.main{grid-template-columns:1fr 1fr}.kpi-strip{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:900px){.main{grid-template-columns:1fr}.kpi-strip{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div><h1>ARL CONTROL TOWER</h1><div class="sub">Akij Resource Limited | BASHIR ALAM (HOD) | Auto-refresh: 3 min</div></div>
+  <div style="display:flex;align-items:center;gap:20px">
+    <div style="text-align:center"><span class="live-dot"></span> <span class="live-text">LIVE</span></div>
+    <div style="text-align:center"><div class="refresh-timer" id="timer">03:00</div><div style="font-size:8px;color:var(--t3)">Next Refresh</div></div>
+    <div style="font-size:9px;color:var(--t3)">Last: <span id="lastUpdate" style="color:var(--teal)">--</span></div>
+  </div>
+  <div style="display:flex;gap:6px">
+    <button class="btn btn-refresh" onclick="location.reload()">&#x21BB; Refresh</button>
+    <a href="dashboard.html" class="btn">Dashboard</a>
+    <a href="ibos_inventory_dashboard.html" class="btn" style="background:rgba(14,165,164,0.12);border-color:var(--teal);color:var(--teal);font-weight:600">&#x1F4E6; iBOS Docs</a>
+    <a href="pending_clearances.html" class="btn" style="background:rgba(239,68,68,0.12);border-color:var(--red);color:var(--red);font-weight:700">&#x1F6A8; Pending (652)</a>
+    <button class="btn" onclick="window.print()">Print</button>
+  </div>
+</div>
+<div class="status-bar">
+  <span><span class="sdot on"></span> MCP DWH Connected</span>
+  <span><span class="sdot on"></span> 203.202.241.211</span>
+  <span><span class="sdot warn"></span> 8 Neg SBUs</span>
+  <span><span class="sdot warn"></span> 12 Stale Items</span>
+  <span style="margin-left:auto">Aug 11, 2026 | <span id="sessionTime">--</span></span>
+</div>
+<div class="kpi-strip" id="kpiStrip"></div>
+<div class="main" id="grid"></div>
+<div class="footer">ARL CONTROL TOWER | Inventory Material Department (Demand & Supply) | Akij Resource Limited &copy; 2026</div>
+<script>
+
+var D=[{s:"Akij Ispat Limited",v:4045700000,c:"Building"},{s:"Batayon Traders Ltd.",v:2475120733,c:"Trading"},{s:"Hashem Rice Mills Ltd.",v:1776210477,c:"Essential"},{s:"Akij Agro Feed Ltd.",v:1432316185,c:"FMCG"},{s:"Nobayon Traders Ltd.",v:1372218915,c:"Trading"},{s:"Akij Cement Company Ltd.",v:841237806,c:"Building"},{s:"Akij Light Engineering",v:475437972,c:"FMCG"},{s:"Akij Poly Fibre Industries",v:378122791,c:"Building"},{s:"M/S The Successors",v:256363772,c:"Building"},{s:"Fariq Agro Ltd.",v:249865077,c:"Essential"},{s:"Akij Ready Mix Concrete",v:174124166,c:"Building"},{s:"Akij Building Solutions",v:162033498,c:"Building"},{s:"Akij InfoTech Ltd.",v:126832355,c:"Trading"},{s:"AKIJ LifeCare Ltd.",v:953213840,c:"Healthcare"},{s:"Lineasia Trading",v:77258114,c:"Trading"},{s:"AKIJ Automobile",v:644178895,c:"Trading"},{s:"AKIJ Telecom",v:473305431,c:"Trading"},{s:"ARL Traders",v:40050336,c:"Trading"},{s:"Akij Breeders",v:357285602,c:"Poultry"},{s:"AKIJ Consumer Electronics",v:28894515,c:"Trading"},{s:"Blue Pill",v:17818580,c:"Trading"},{s:"Akij Resource",v:5349000,c:"Head Office"},{s:"Akij Electrofab",v:421705,c:"Trading"},{s:"Akij Shipping Line",v:293978,c:"Shipping"},{s:"Bongo Traders",v:-37250326,c:"Trading"},{s:"Daily Trading",v:-40305008,c:"Trading"},{s:"Asia One Trading",v:-47896691,c:"Trading"},{s:"Magnum Steel",v:-64507484,c:"Building"},{s:"Akij Commodities",v:-229703286,c:"Trading"},{s:"Direct Trading",v:-237392653,c:"Trading"},{s:"Eurasia Trading",v:-420802148,c:"Trading"},{s:"Akij Essentials",v:-29148960684037,c:"Essential"}];
+var P=[{s:"Kafil And Razzak Agro",q:798595196,n:2313,c:1292,d:"2025-11-19"},{s:"Hashem Rice Mills",q:327320997,n:4031,c:3113,d:"2026-08-10"},{s:"Akij Light Engineering",q:266347184,n:5407,c:2152,d:"2026-08-10"},{s:"Akij Essentials",q:213620833,n:10281,c:9711,d:"2026-08-10"},{s:"Akij Agro Feed",q:196167728,n:6411,c:4182,d:"2026-08-10"},{s:"Daily Trading",q:62591456,n:156,c:183,d:"2026-08-09"},{s:"Akij Poly Fibre",q:60274865,n:8515,c:3214,d:"2026-08-10"},{s:"Akij Cement",q:50667424,n:16195,c:13509,d:"2026-08-10"},{s:"Nobayon Traders",q:46360142,n:69,c:69,d:"2026-08-06"},{s:"Akij Ready Mix",q:24458907,n:8470,c:8955,d:"2026-08-10"}];
+var A=[{s:"Batayon Traders",i:"Trading Goods",v:2475120733,d:376,c:"Obsolete"},{s:"Lineasia Trading",i:"Trading Goods",v:77258114,d:371,c:"Obsolete"},{s:"Bongo Traders",i:"Finished Goods",v:277826,d:331,c:"Non-Moving"},{s:"Akij Ready Mix",i:"Trading Goods",v:1112848,d:300,c:"Non-Moving"},{s:"M/S The Successors",i:"Raw Materials",v:238071033,d:191,c:"Non-Moving"},{s:"ARL Traders",i:"Trading Goods",v:40050336,d:100,c:"Slow-Moving"},{s:"Akij Resource",i:"Trading Goods",v:5349000,d:100,c:"Slow-Moving"}];
+var N=[{s:"Akij Essentials",i:"Semi Finished Goods",v:-29151383784394},{s:"Eurasia Trading",i:"Trading Goods",v:-420802148},{s:"Direct Trading",i:"Trading Goods",v:-237392653},{s:"Akij Commodities",i:"Trading Goods",v:-88249334},{s:"Magnum Steel",i:"Raw Materials",v:-37082467},{s:"Bongo Traders",i:"Trading Goods",v:-30199003}];
+
+function f(v){if(Math.abs(v)>=10000000)return(v/10000000).toFixed(2)+" Cr";if(Math.abs(v)>=100000)return(v/100000).toFixed(2)+" Lac";return v.toLocaleString()}
+
+function build(){
+var tPos=D.filter(function(x){return x.v>0}).reduce(function(s,x){return s+x.v},0);
+var tNeg=Math.abs(D.filter(function(x){return x.v<0}).reduce(function(s,x){return s+x.v},0));
+var tP=P.reduce(function(s,x){return s+x.q},0);
+
+document.getElementById("kpiStrip").innerHTML=
+'<div class="kpi g"><div class="lbl">Positive Stock</div><div class="val" style="color:var(--green)">'+f(tPos)+'</div><div class="sub">24 SBUs</div></div>'+
+'<div class="kpi r"><div class="lbl">Negative Stock</div><div class="val" style="color:var(--red)">'+f(tNeg)+'</div><div class="sub">8 SBUs</div></div>'+
+'<div class="kpi o"><div class="lbl">PR Pending Qty</div><div class="val" style="color:var(--orange)">'+tP.toLocaleString()+'</div><div class="sub">57K+ PRs</div></div>'+
+'<div class="kpi t"><div class="lbl">Total Receipts</div><div class="val" style="color:var(--teal)">32,858.49 Cr</div><div class="sub">WMS Inbound</div></div>'+
+'<div class="kpi p"><div class="lbl">Total Issues</div><div class="val" style="color:var(--purple)">28,194.21 Cr</div><div class="sub">WMS Outbound</div></div>'+
+'<div class="kpi r"><div class="lbl">Aging At-Risk</div><div class="val" style="color:var(--red)">'+f(A.reduce(function(s,x){return s+x.v},0))+'</div><div class="sub">'+A.length+' items</div></div>'+
+'<div class="kpi o"><div class="lbl">Neg GL Items</div><div class="val" style="color:var(--orange)">'+N.length+'</div><div class="sub">Review needed</div></div>'+
+'<div class="kpi b"><div class="lbl">Active SBUs</div><div class="val" style="color:var(--blue)">'+D.length+'</div><div class="sub">DWH Database</div></div>';
+
+var g="";
+g+='<div class="card ft"><div class="card-h"><h3>&#x1F4B0; Closing Stock - All Business Concerns</h3><span style="font-size:9px;color:var(--t3)">Source: GL Journal | '+new Date().toLocaleString()+'</span></div><div class="card-b"><div class="scroll"><table><thead><tr><th>#</th><th>SBU</th><th>Sector</th><th>Net Value (BDT)</th><th>Status</th></tr></thead><tbody>';
+D.sort(function(a,b){return Math.abs(b.v)-Math.abs(a.v)}).forEach(function(x,i){
+g+='<tr><td style="color:var(--t3)">'+(i+1)+'</td><td style="font-weight:600;color:var(--t1)">'+x.s+'</td><td><span class="bg bt">'+x.c+'</span></td><td style="font-weight:700;color:'+(x.v>=0?'var(--green)':'var(--red)')+'">'+Math.abs(x.v).toLocaleString()+'</td><td><span class="bg '+(x.v>=0?'bg':'br')+'">'+(x.v>=0?'Positive':'Negative')+'</span></td></tr>';
+});
+g+='</tbody></table></div></div></div>';
+
+g+='<div class="card"><div class="card-h"><h3>&#x1F4CB; PR Pending - Top 10</h3></div><div class="card-b"><div class="scroll"><table><thead><tr><th>SBU</th><th>Pending Qty</th><th>Items</th><th>Last PR</th></tr></thead><tbody>';
+P.forEach(function(x){g+='<tr><td style="font-weight:500;color:var(--t1)">'+x.s+'</td><td style="font-weight:600;color:var(--orange)">'+x.q.toLocaleString()+'</td><td>'+x.n+'</td><td style="color:var(--t3)">'+x.d+'</td></tr>';});
+g+='</tbody></table></div></div></div>';
+
+g+='<div class="card v2"><div class="card-h"><h3>&#x26A0; Alerts &amp; Action Items</h3></div><div class="card-b">';
+g+='<div class="alert ar"><span>&#x1F6A8;</span><div><b>AEL Semi Finished:</b> BDT -29.15T - urgent accounting reconciliation needed</div></div>';
+g+='<div class="alert ar"><span>&#x1F6A8;</span><div><b>Batayon Trading:</b> BDT 247.51 Cr idle 376 days (Obsolete)</div></div>';
+g+='<div class="alert ao"><span>&#x26A0;</span><div><b>Kafil &amp; Razzak:</b> 696.8M Paddy pending since Sep 2025</div></div>';
+g+='<div class="alert ao"><span>&#x26A0;</span><div><b>Daily Trading:</b> 60.5M Steam Coal pending since Jan 2025</div></div>';
+g+='<div class="alert ao"><span>&#x26A0;</span><div><b>M/S The Successors:</b> BDT 23.81 Cr Raw Materials idle 191 days</div></div>';
+g+='<div class="alert ag"><span>&#x2705;</span><div><b>Akij Ispat:</b> BDT 404.57 Cr top performer | <b>Akij Cement:</b> 13,509 PRs</div></div>';
+g+='</div></div>';
+
+g+='<div class="card"><div class="card-h"><h3>&#x23F3; Aging Analysis</h3></div><div class="card-b"><div class="scroll"><table><thead><tr><th>SBU</th><th>Item</th><th>Value</th><th>Days</th><th>Status</th></tr></thead><tbody>';
+A.forEach(function(x){
+var cc=x.c=="Obsolete"?"br":x.c=="Non-Moving"?"bo":"bb";
+g+='<tr><td style="font-weight:500;color:var(--t1)">'+x.s+'</td><td>'+x.i+'</td><td style="font-weight:600;color:'+(x.c=="Obsolete"?"var(--red)":"var(--orange)")+'">'+f(x.v)+'</td><td>'+x.d+'d</td><td><span class="bg '+cc+'">'+x.c+'</span></td></tr>';
+});
+g+='</tbody></table></div></div></div>';
+
+g+='<div class="card"><div class="card-h"><h3>&#x1F4C9; Negative Stock</h3></div><div class="card-b"><div class="scroll"><table><thead><tr><th>SBU</th><th>Item</th><th>Value</th></tr></thead><tbody>';
+N.forEach(function(x){g+='<tr><td style="font-weight:500;color:var(--t1)">'+x.s+'</td><td>'+x.i+'</td><td style="font-weight:600;color:var(--red)">'+x.v.toLocaleString()+'</td></tr>';});
+g+='</tbody></table></div></div></div>';
+
+g+='<div class="card"><div class="card-h"><h3>&#x1F69A; GRN Gate Entry</h3></div><div class="card-b"><div class="scroll"><table><thead><tr><th>Item</th><th>Qty</th></tr></thead><tbody>';
+[{i:"MS Scrap",q:1135293},{i:"Scrap",q:653600},{i:"SCR5AP",q:390500},{i:"MS ROD",q:371223}].forEach(function(x){g+='<tr><td>'+x.i+'</td><td style="font-weight:600;color:var(--teal)">'+x.q.toLocaleString()+'</td></tr>';});
+g+='</tbody></table></div></div></div>';
+
+g+='<div class="card ft"><div class="card-h"><h3>&#x1F4CA; Stock Value Chart</h3></div><div class="card-b"><div class="chart-wrap"><canvas id="ch1"></canvas></div></div></div>';
+
+document.getElementById("grid").innerHTML=g;
+
+setTimeout(function(){
+var top=D.filter(function(x){return x.v>0}).sort(function(a,b){return b.v-a.v}).slice(0,12);
+if(document.getElementById("ch1")){
+new Chart(document.getElementById("ch1"),{type:"bar",indexAxis:"y",
+data:{labels:top.map(function(x){return x.s}),datasets:[{data:top.map(function(x){return x.v/10000000}),backgroundColor:["#0EA5A4","#FBBF24","#57C3FF","#9A91FB","#10B981","#85DECB","#6C72FF","#126962","#003333","#007f7f","#AFEEEE","#BAFFF5"].map(function(c){return c+"99"}),borderColor:["#0EA5A4","#FBBF24","#57C3FF","#9A91FB","#10B981","#85DECB","#6C72FF","#126962","#003333","#007f7f","#AFEEEE","#BAFFF5"],borderWidth:1,borderRadius:4}]},
+options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:"rgba(26,39,68,0.5)"},ticks:{color:"#94a3b8",font:{size:9},callback:function(v){return v+" Cr"}}},y:{grid:{display:false},ticks:{color:"#94a3b8",font:{size:9}}}}}
+});
+}},100);
+}
+
+var totalSec=180,start=new Date();
+document.getElementById("lastUpdate").textContent=start.toLocaleTimeString();
+document.getElementById("sessionTime").textContent=start.toLocaleTimeString();
+function tick(){
+var r=Math.max(0,totalSec-Math.floor((new Date()-start)/1000));
+var m=Math.floor(r/60),s=r%60;
+document.getElementById("timer").textContent=(m<10?"0":"")+m+":"+(s<10?"0":"")+s;
+if(r<=30)document.getElementById("timer").style.color="var(--orange)";
+if(r<=10)document.getElementById("timer").style.color="var(--red)";
+if(r<=0)location.reload();
+}
+build();
+setInterval(tick,1000);
+tick();
+</script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+ApplicationId,EmployeeName,Designation,Department,BusinessUnit,PhoneNumber,ApplicationDate,LastWorkingDate,Stage,DaysUntilLastDay
+1716,Saikat Mahmud,Store Keeper,Operations,Akij Agro Feed Ltd.,01636238541,2026-08-03,2026-08-17,0,0
+1544,Md. Ariful Islam,Territory Manager,Marketing,Akij Building Solutions Limited,01321157199,2026-06-20,2026-08-20,0,3
+1560,Md Hasan ,Helper,Operations,Akij Light Engineering Limited,01904442495,2026-06-20,2026-08-20,0,3
+1663,Md.Emon Hossain,Supervisor,Operations,Hashem Rice Mills Ltd.,01741425650,2026-07-19,2026-08-20,0,3
+1728,Md. Abu Tayer,Officer,Finance,Akij Ready Mix Concrete Ltd,01679600881,2026-08-04,2026-08-21,0,4
+1705,Afifa Rahman,Assistant Officer,Operations,Akij Air Service Ltd.,01321157254,2026-08-03,2026-08-24,4,7
+1693,Md. Abdur Razzak,Assistant Manager,Human Capital,Akij Agro Feed Ltd.,01719590704,2026-07-30,2026-08-29,0,12
+1701,Md.Amit Hasan,Officer,Corporate,Hashem Rice Mills Ltd.,01827640040,2026-08-03,2026-08-30,0,13
+1709,Md. Shalha Mucha Bhuyan,Senior Officer,Marketing,Akij Resource,01335172297,2026-08-03,2026-08-30,8,13
+1718,Md. Kamrul Hashan,Territory Sales Officer,Marketing,Akij Cement Company Ltd.,01329690364,2026-08-04,2026-08-30,0,13
+1738,Md. Maznur Rahman,Sales Officer,Marketing,Akij Cement Company Ltd.,01316312020,2026-08-05,2026-08-30,0,13
+1743,Md Tariqul Islam,Sales Representative,Marketing,Akij Essentials Ltd.,01722255955,2026-08-08,2026-08-31,2,14
+1745,Amerul Islam,Assistant Foreman,Operations,Akij Light Engineering Limited,01732026982,2026-08-01,2026-08-31,3,14
+1730,Nazim Uddin,Senior Officer,Operations,Akij Air Service Ltd.,01791585858,2026-08-04,2026-08-31,3,14
+1731,Md. Mitzur Rahman,Officer,Operations,Akij Air Service Ltd.,01634000161,2026-08-04,2026-08-31,3,14
+1735,TAMZIDUL ISLAM,Officer,Operations,Akij Air Service Ltd.,01335073536,2026-08-05,2026-08-31,3,14
+1722,Md Sabab Hossain,Cash Officer,Operations,AKIJ LifeCare Ltd.,01940996665,2026-08-04,2026-08-31,2,14
+1723,Shahin Alam,Assistant Officer,Operations,Akij Mediplex Limited,01768997809,2026-08-04,2026-08-31,2,14
+1727,MD ADIL RAFI,Officer,Operations,Akij Air Service Ltd.,01915756925,2026-08-04,2026-08-31,3,14
+1769,Tauhidul Islam Antor,Zonal Sales Manager,Marketing,Akij Essentials Ltd.,01714890051,2026-08-12,2026-08-31,0,14
+1773,Moksedul Islam,Technician,Operations,Akij Ispat Limited,01335944939,2026-08-01,2026-08-31,0,14
+1703,S.M. Mehedi Hasan Jique,Territory Officer,Marketing,Akij Ispat Limited,01912917141,2026-08-03,2026-08-31,0,14
+1699,Jamal Hossain Sardar,Senior Technician,Operations,Hashem Rice Mills Ltd.,01868308080,2026-08-02,2026-08-31,1,14
+1700,Md. Monzurul Islam ,Senior Territory Officer,Marketing,Akij Ispat Limited,01335073531,2026-08-02,2026-08-31,0,14
+1694,Md Humaun Kabir,Engineer,Operations,Akij Agro Feed Ltd.,01752777952,2026-08-01,2026-08-31,0,14
+1675,Md. Jahirul Islam,Officer,Operations,Akij Building Solutions Limited,01926045143,2026-07-23,2026-08-31,0,14
+1680,Md. Shamim Mia,Helper,Operations,Akij Ispat Limited,111,2026-07-01,2026-08-31,3,14
+1681,Md. Sihab Box,Helper,Operations,Akij Ispat Limited,963,2026-07-01,2026-08-31,3,14
+1631,Md. Masum Hossain,Assistant Engineer,Operations,Akij Ispat Limited,01787020392,2026-07-08,2026-08-31,3,14
+1519,Md. Rayhan Rahman,Assistant Officer,Operations,Akij Light Engineering Limited,01685592990,2026-06-11,2026-08-31,5,14
+1609,Md. Rafiqul Islam,Senior Manager,Marketing,Akij Essentials Ltd.,01335172202,2026-07-01,2026-08-31,2,14
+1782,Md. Rasel Mahmud,Senior Officer,Marketing,Akij Ispat Limited,01335073526,2026-08-01,2026-08-31,0,14
+1619,Md. Zulfiker Kaiser,Manager,Human Capital,Akij Essentials Ltd.,01685229410,2026-07-01,2026-09-01,5,15
+1581,Md Masum Hossain,Mechanic,Operations,Akij Cement Company Ltd.,01988354270,2026-07-02,2026-09-02,4,16
+1603,Md Tanvir Rahman Labib,Senior Officer,Operations,Akij Agro Feed Ltd.,01768628045,2026-07-05,2026-09-03,0,17
+1726,Md. Abdullah Al - Monsor,Territory Sales Officer,Marketing,Akij Cement Company Ltd.,01755642352,2026-08-04,2026-09-03,1,17
+1744,Harichan  Majumdar,Sales Officer,Marketing,Akij Cement Company Ltd.,01321157280,2026-08-09,2026-09-03,0,17
+1759,Md. Rafiqul Islam,Assistant Manager,Human Capital,Akij Cement Company Ltd.,01329690204,2026-08-01,2026-09-04,0,18
+1593,Kawser Alam,Operator,Operations,Akij Poly Fibre Industries Ltd.,00,2026-07-05,2026-09-04,4,18
+1598,Mosiur Rahman,Operator,Operations,Akij Poly Fibre Industries Ltd.,0,2026-07-05,2026-09-05,4,19
+1601,Md. Rashidul Hasan,Manager,Finance,Akij Cement Company Ltd.,01716399329,2026-07-05,2026-09-05,3,19
+1737,Aminul Islam Samrat,Territory Officer,Marketing,Akij Light Engineering Limited,01759471633,2026-08-05,2026-09-05,0,19
+1739,Md. Jiaul Hoque Shawkat,Regional Sales Manager,Marketing,Akij Light Engineering Limited,01631777390,2026-08-06,2026-09-06,0,20
+1614,Yeaman Hossain Refat,Officer,Marketing,Akij Broadcast Media Ltd.,01778792112,2026-07-06,2026-09-06,7,20
+1620,Md Jobayed Hossain,Junior Operator,Operations,Akij Essentials Ltd.,01629574885,2026-07-07,2026-09-07,10,21
+1755,Mahafuzr Rahman,Assistant General Manager,Marketing,Akij Resource,01737345637,2026-08-10,2026-09-07,0,21
+1749,Md. Kaosar Rahman,Deputy Manager,Operations,Akij Essentials Ltd.,01321157143,2026-08-09,2026-09-09,0,23
+1747,Al Mamun,Assistant Manager,Finance,Akij Ispat Limited,01714674377,2026-08-01,2026-09-09,2,23
+1635,Saju Dhali,Zonal Sales Manager,Marketing,Akij Essentials Ltd.,01916488394,2026-07-09,2026-09-09,0,23
+1713,Rinkue Hossain,Sales Officer,Marketing,Akij Cement Company Ltd.,01765494960,2026-08-03,2026-09-10,0,24
+1751,Sourav Ghosh,Sales Representative,Marketing,Akij Essentials Ltd.,01400606889,2026-08-10,2026-09-10,1,24
+1757,Ashrafuzzaman Moim,Senior Manager,Finance,Akij Shipping Line Ltd.,01721454582,2026-08-11,2026-09-10,0,24
+1761,Sanila Sharmeen,Senior Manager,Finance,Akij Logistics Ltd.,01674911304,2026-08-11,2026-09-10,0,24
+1767,Md. Faysal,Mechanic,Operations,Akij Poly Fibre Industries Ltd.,01926783084,2026-08-12,2026-09-11,1,25
+1771,Md Jehad Ali,Helper,Operations,Akij Essentials Ltd.,01885124782,2026-08-13,2026-09-12,0,26
+1640,Md. Sharif Ullah,Operator,Operations,Akij Poly Fibre Industries Ltd.,01980708793,2026-07-12,2026-09-12,5,26
+1776,Md Jonayed Hossain,Senior Manager,Finance,Akij Poly Fibre Industries Ltd.,01533079475,2026-08-13,2026-09-12,3,26
+1780,Md. Mominul Islam,Engineer,Operations,Akij Ready Mix Concrete Ltd,01815128732,2026-08-15,2026-09-14,0,28
+1786,Md. Abdul Alim,Manager,Operations,Akij Essentials Ltd.,01329690394,2026-08-16,2026-09-15,0,29
+1665,Taskia Ameen,Officer,Marketing,Nobayon Traders Ltd.,01886808911,2026-07-20,2026-09-20,1,34
+1708,Khondaker Mostakim Ahmed Fahim,Chief Supply Chain Officer,Operations,Akij Resource,01335172199,2026-08-03,2026-09-21,0,35
+1671,Safiqul Islam Real,Technician,Information Technology (IT),Blue Pill Limited,01614919592,2026-07-22,2026-09-22,1,36
+1672,Khadiza Bintee Azad,Assistant Officer,Operations,Akij Logistics Ltd.,01335172305,2026-07-22,2026-09-22,8,36
+1673,Ritu,Assistant Officer,Operations,Akij Logistics Ltd., 01335073557,2026-07-22,2026-09-22,8,36
+1706,Shahadat Hossain Shanto,Supervisor,Finance,Fariq Agro Ltd.,01631-243247,2026-08-03,2026-09-30,0,44
+1698,Dawan Alamgir,Senior Technician,Operations,Akij Cement Company Ltd.,00,2026-08-01,2026-09-30,4,44
+1775,Md. Mizanur Rahman,Security Guard,Human Capital,Bongo Traders Ltd,00,2026-08-01,2026-09-30,0,44
+1721,Md. Rashed Khan,Supervisor,Finance,Fariq Agro Ltd.,01736009935,2026-08-04,2026-09-30,0,44
+1740,Ramjan Mia,Helper,Operations,Akij Ispat Limited,01700000000,2026-08-03,2026-10-02,3,46
+1774,MD. Robiul Mia,Helper,Operations,Akij Ispat Limited,01603264635,2026-08-03,2026-10-03,0,47
+1772,Md. Badal Hossain,Electrician,Operations,Akij Ispat Limited,01931562898,2026-08-03,2026-10-03,3,47
+1712,Assaduzzaman ,Special Correspondent,Operations,Akij Broadcast Media Ltd.,01778189508,2026-08-03,2026-10-03,2,47
+1748,Md. Mahbur Alam,Operator,Operations,Akij Poly Fibre Industries Ltd.,00,2026-08-09,2026-10-07,4,51
+1742,Md. Nur Alam,Fireman,Human Capital,Akij Essentials Ltd.,01786087169,2026-08-08,2026-10-08,3,52
+1752,Upama Islam Rupa,Officer,Operations,Akij Broadcast Media Ltd.,01332812152,2026-08-10,2026-10-08,2,52
+1758,Md. Abdul Ahad,Electrician,Operations,Akij Ispat Limited,01700000000,2026-08-11,2026-10-10,2,54
+1764,Md. Tofael Hossain,Assistant General Manager,Operations,Bongo Traders Ltd,01754808001,2026-08-12,2026-10-12,7,56
+1770,A.R.M Salah Uddin,Senior Officer,Operations,Akij Shipping Line Ltd.,01719812903,2026-08-13,2026-10-13,0,57
+1783,Diana Perveen,Deputy General Manager,Marketing,Blue Pill Limited,01534321704,2026-08-16,2026-10-17,0,61
+1720,Md Suzon Hossen,Sales Representative,Marketing,Akij Essentials Ltd.,01948543278,2026-08-04,2026-11-04,6,79
+1754,Md. Habibur Rahman,Sales Officer,Marketing,Akij Cement Company Ltd.,01321157270,2026-08-10,2026-12-31,0,136
