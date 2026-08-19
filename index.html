@@ -57,6 +57,16 @@ tr:hover td{background:rgba(14,165,164,0.04)}
 @media(max-width:900px){.main{grid-template-columns:1fr}.kpi-strip{grid-template-columns:repeat(2,1fr)}}
 .panel{display:none}
 .panel.on{display:block}
+.chat-box{max-height:440px;min-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:6px 2px}
+.msg{max-width:88%;padding:8px 12px;border-radius:8px;font-size:11px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.msg.user{align-self:flex-end;background:rgba(87,195,255,0.12);border:1px solid rgba(87,195,255,0.35);color:#bfe3ff}
+.msg.agent{align-self:flex-start;background:var(--card2);border:1px solid var(--border);color:var(--t1)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.chip{background:rgba(14,165,164,0.1);border:1px solid var(--teal);color:var(--teal);font-size:9px;font-weight:600;padding:4px 10px;border-radius:12px;cursor:pointer;white-space:nowrap}
+.chip:hover{background:rgba(14,165,164,0.25)}
+.agent-input{display:flex;gap:8px;margin-top:8px}
+.agent-input input{flex:1;background:var(--card2);border:1px solid var(--border);color:var(--t1);padding:8px 12px;border-radius:5px;font-size:11px;outline:none;font-family:inherit}
+.agent-input input:focus{border-color:var(--teal)}
 </style>
 </head>
 <body>
@@ -99,7 +109,7 @@ var CUR="overview";
 function setTab(t){CUR=t;document.querySelectorAll(".tab").forEach(function(x){x.classList.toggle("on",x.dataset.t===t)});render()}
 
 function tabsBar(){
-var ts=[["overview","Overview"],["stock","Closing Stock"],["pr","PR Pending"],["aging","Inventory Aging"],["dio","DIO & Turnover"],["clearance","Clearance Pending"],["alerts","Alerts"],["strategy","Strategy"]];
+var ts=[["overview","Overview"],["stock","Closing Stock"],["pr","PR Pending"],["aging","Inventory Aging"],["dio","DIO & Turnover"],["clearance","Clearance Pending"],["alerts","Alerts"],["strategy","Strategy"],["agent","AI Agent"]];
 document.getElementById("tabs").innerHTML=ts.map(function(x){return '<div class="tab'+(x[0]===CUR?" on":"")+'" data-t="'+x[0]+'" onclick="setTab(\x60'+x[0]+'\x60)">'+x[1]+'</div>'}).join("");
 }
 
@@ -135,7 +145,9 @@ if(CUR==="dio"){g+=panelDIO();}
 if(CUR==="clearance"){g+=panelClearance();}
 if(CUR==="alerts"){g+=panelAlerts();}
 if(CUR==="strategy"){g+=panelStrategy();}
+if(CUR==="agent"){g+=panelAgent();}
 document.getElementById("grid").innerHTML=g;
+if(CUR==="agent"){agentRender();}
 after();
 }
 
@@ -253,6 +265,49 @@ return h;
 
 function panelDIOChart(){
 return '<div class="card ft"><div class="card-h"><h3>&#x1F4CA; DIO Comparison (Top SBUs)</h3></div><div class="card-b"><div class="chart-wrap"><canvas id="chDio"></canvas></div></div></div>';
+}
+
+var AGENT_MSGS=[{r:"agent",t:"Assalamu Alaikum! I am the ARL Inventory AI Agent, powered by your Control Tower DWH data.\n\nAsk me anything, for example:\n\u2022 \"Executive summary\"\n\u2022 \"What is the DIO of Akij Cement?\"\n\u2022 \"Which stock is obsolete?\"\n\u2022 \"Top risks\" / \"Recommendations\"\n\u2022 \"Predict stock-outs\""}];
+
+function panelAgent(){
+var h='<div class="card ft"><div class="card-h"><h3>&#x1F916; ARL Inventory AI Agent</h3><span style="font-size:9px;color:var(--t3)">Natural language over DWH data | /api/agent | MCP: askInventoryAgent</span></div><div class="card-b">';
+h+='<div class="chips">'+["Executive summary","Top risks","Obsolete stock","Negative stock","DIO analysis","Predictions","Recommendations"].map(function(x){return '<span class="chip" onclick="agentAsk(\x27'+x+'\x27)">'+x+'</span>'}).join("")+'</div>';
+h+='<div class="chat-box" id="chatBox"></div>';
+h+='<div class="agent-input"><input id="agentQ" placeholder="Ask: stock, aging, DIO, PR pipeline, clearance, risks, any SBU..." onkeydown="if(event.key===\x27Enter\x27)agentAsk()"><button class="btn btn-refresh" onclick="agentAsk()">Ask</button><button class="btn" onclick="agentReport()">Full Report</button></div>';
+h+='</div></div>';
+return h;
+}
+
+function agentRender(busy){
+var el=document.getElementById("chatBox");if(!el)return;
+var h=AGENT_MSGS.map(function(m){return '<div class="msg '+m.r+'">'+String(m.t).replace(/&/g,"&amp;").replace(/</g,"&lt;")+'</div>'}).join("");
+if(busy)h+='<div class="msg agent"><span class="live-dot" style="width:6px;height:6px;margin-right:6px"></span>Analyzing control tower data...</div>';
+el.innerHTML=h;
+el.scrollTop=el.scrollHeight;
+}
+
+function agentAsk(preset){
+var inp=document.getElementById("agentQ");
+var q=preset||(inp?inp.value.trim():"");
+if(!q)return;
+if(inp)inp.value="";
+AGENT_MSGS.push({r:"user",t:q});
+agentRender(true);
+fetch("/api/agent?q="+encodeURIComponent(q)).then(function(r){return r.json()}).then(function(a){
+var t=a.answer||a.error||"(no answer)";
+if(a.source)t+="\n\n\u2014 data: "+a.source+" @ "+new Date(a.generatedAt||Date.now()).toLocaleString();
+AGENT_MSGS.push({r:"agent",t:t});
+agentRender();
+}).catch(function(){AGENT_MSGS.push({r:"agent",t:"Agent API unreachable \u2014 check /api/agent."});agentRender();});
+}
+
+function agentReport(){
+AGENT_MSGS.push({r:"user",t:"Show me the full analysis report"});
+agentRender(true);
+fetch("/api/agent").then(function(r){return r.json()}).then(function(a){
+AGENT_MSGS.push({r:"agent",t:a.reportText||JSON.stringify(a.report||a).substring(0,3000)});
+agentRender();
+}).catch(function(){AGENT_MSGS.push({r:"agent",t:"Agent API unreachable."});agentRender();});
 }
 
 function after(){

@@ -38,6 +38,51 @@
           }
         }
       }
+    },
+    "/api/agent": {
+      "get": {
+        "operationId": "askInventoryAgent",
+        "summary": "Ask the ARL Inventory AI Agent a question",
+        "description": "Natural-language inventory intelligence for Akij Resource Limited: group health score, per-SBU risk scores, obsolescence analysis, DIO & turnover, PR pipeline, clearance backlog, risks, predictions and a prioritized action plan. Without q, returns the full analysis report.",
+        "tags": ["inventory-agent"],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Natural language question, e.g. 'What is the DIO of Akij Cement?' or 'top risks' or 'recommendations'"
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "enum": ["raw"] },
+            "description": "Set to 'raw' for the structured JSON analysis report instead of the text report"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Agent answer or full analysis report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "question": { "type": "string", "description": "The question asked (when q is provided)" },
+                    "intent": { "type": "string", "description": "Detected intent (summary, sbu-profile, aging, dio, pr, clearance, risk, predict, recommend, top, worst, negative, help)" },
+                    "answer": { "type": "string", "description": "Agent answer in plain text" },
+                    "report": { "type": "object", "description": "Full structured analysis (when no q is given)" },
+                    "reportText": { "type": "string", "description": "Human-readable full report (when no q is given)" },
+                    "source": { "type": "string", "description": "live or snapshot" },
+                    "generatedAt": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

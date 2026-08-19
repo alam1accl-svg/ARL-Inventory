@@ -2,18 +2,7 @@ import { Readable } from 'node:stream';
 import { createMcpHandler } from 'mcp-handler';
 import { z } from 'zod';
 
-import { fetchAll, SNAPSHOT } from '../lib/data.mjs';
-
-async function getControlTowerData() {
-  try {
-    const data = await fetchAll();
-    return { ...data, source: 'live' };
-  } catch (e) {
-    const snap = JSON.parse(JSON.stringify(SNAPSHOT));
-    snap.generatedAt = new Date().toISOString();
-    return { ...snap, source: 'snapshot' };
-  }
-}
+import { getControlTowerData, analyzeInventory, askAgent } from '../lib/agent.mjs';
 
 const mcpHandler = createMcpHandler((server) => {
   server.registerTool(
@@ -28,6 +17,42 @@ const mcpHandler = createMcpHandler((server) => {
       const data = await getControlTowerData();
       return {
         content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
+      };
+    },
+  );
+
+  server.registerTool(
+    'getInventoryAgentInsights',
+    {
+      title: 'Get ARL Inventory AI Agent Insights',
+      description:
+        'Get the AI inventory agent full analysis: group health score, per-SBU risk scores, prioritized risks (negative stock, obsolescence, high DIO, stale PRs), predictions (stock-out risk, obsolescence trajectory, cash release potential) and a prioritized action plan for Akij Resource Limited.',
+      inputSchema: z.object({}),
+    },
+    async () => {
+      const data = await getControlTowerData();
+      const rep = analyzeInventory(data);
+      return {
+        content: [{ type: 'text', text: JSON.stringify(rep, null, 2) }],
+      };
+    },
+  );
+
+  server.registerTool(
+    'askInventoryAgent',
+    {
+      title: 'Ask the ARL Inventory AI Agent',
+      description:
+        'Ask the ARL Inventory AI Agent a natural language question about Akij Resource Limited inventory. Examples: "executive summary", "what is the DIO of Akij Cement?", "which stock is obsolete?", "top risks", "recommendations", "status of Akij Ispat".',
+      inputSchema: z.object({
+        question: z.string().describe('Natural language question about inventory, stock, aging, DIO, PRs, clearance, risks or recommendations'),
+      }),
+    },
+    async ({ question }) => {
+      const data = await getControlTowerData();
+      const a = askAgent(data, question);
+      return {
+        content: [{ type: 'text', text: a.answer + '\n\n[intent: ' + a.intent + ' | source: ' + a.source + ' | ' + a.generatedAt + ']' }],
       };
     },
   );
