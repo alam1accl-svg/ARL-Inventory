@@ -752,8 +752,8 @@ var wOpts=whFiltered.map(function(x){return '<option value="'+x.replace(/"/g,"&q
 var plantDisabled=FLT.bu?"":"disabled";
 var whDisabled=FLT.plant?"":"disabled";
 var h='<div class="card ft" style="box-shadow:0 2px 10px rgba(0,0,0,0.05)"><div class="card-h"><h3 style="font-weight:800;color:var(--theme-primary-dark)">Filters</h3><span style="font-size:9px;color:var(--t3)">'+buNames.length+' Business Units | Plant &amp; Warehouse cascade by selection</span></div><div class="card-b" style="background:var(--theme-card2)"><div class="filter-grid">';
-h+='<label>Start Date<input type="date" id="fFrom" value="'+(FLT.from||todayStr())+'" onchange="updateFilters()"></label>';
-h+='<label>End Date<input type="date" id="fTo" value="'+(FLT.to||todayStr())+'" onchange="updateFilters()"></label>';
+h+='<label>Start Date<input type="date" id="fFrom" value="'+(FLT.from||todayStr())+'" onchange="updateFilters()" onclick="try{this.showPicker()}catch(e){}"></label>';
+h+='<label>End Date<input type="date" id="fTo" value="'+(FLT.to||todayStr())+'" onchange="updateFilters()" onclick="try{this.showPicker()}catch(e){}"></label>';
 h+='<label>Business Unit<select id="fBU" onchange="updateFilters()"><option value="">All Business Units</option>'+buOpts+'</select></label>';
 h+='<label>Plant<select id="fPlant" '+plantDisabled+' onchange="updateFilters()"><option value="">All Plants</option>'+pOpts+'</select></label>';
 h+='<label>Warehouse<select id="fWH" '+whDisabled+' onchange="updateFilters()"><option value="">All Warehouses</option>'+wOpts+'</select></label>';
