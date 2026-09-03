@@ -434,7 +434,7 @@ if(d.aging&&d.aging.length){A=d.aging.map(function(x){return{s:x.s,i:"Inventory"
 if(d.dio&&d.dio.length){TO=d.dio.map(function(x){return{s:x.s,inv:x.inv,cogs:x.cogs}})}
 if(d.clearance&&d.clearance.length){CL=d.clearance}
 if(d.whPlant&&d.whPlant.length){WHP=d.whPlant.map(function(x){return{bu:x.bu,wh:x.wh,plant:x.plant}})}
-if(d.businessUnits&&d.businessUnits.length){BUS=d.businessUnits.map(function(x){return x.s})}
+if(d.businessUnits&&d.businessUnits.length){BUS=d.businessUnits.map(function(x){return typeof x==="string"?x:(x.s||x)})}
 if(d.otif&&d.otif.length){OTIF=d.otif}
 if(d.space&&d.space.length){SPACE=d.space}
 if(d.manpower&&d.manpower.length){MANPOWER=d.manpower}
@@ -577,23 +577,49 @@ if(FLT.wh){var ok2=false;WHP.forEach(function(x){if(x.bu===buName&&x.wh===FLT.wh
 return true;
 }
 
+function filteredMovement(){
+var from=FLT.from||"",to=FLT.to||"";
+var hasRange=from&&to&&from<to;
+var bu=(FLT.bu||"").toLowerCase(),wh=(FLT.wh||"").toLowerCase(),plant=(FLT.plant||"").toLowerCase(),txn=(FLT.txn||"").toLowerCase(),item=(FLT.item||"").toLowerCase();
+return MOVEMENT.filter(function(x){
+  if(hasRange&&(x.dte<from||x.dte>to))return false;
+  if(!geoOK(x.sbu))return false;
+  if(bu&&(x.sbu||"").toLowerCase().indexOf(bu)<0)return false;
+  if(plant&&(x.plant||"").toLowerCase().indexOf(plant)<0)return false;
+  if(wh&&(x.wh||"").toLowerCase().indexOf(wh)<0)return false;
+  if(item&&(x.item||"").toLowerCase().indexOf(item)<0&&(x.sbu||"").toLowerCase().indexOf(item)<0&&(x.plant||"").toLowerCase().indexOf(item)<0&&(x.wh||"").toLowerCase().indexOf(item)<0)return false;
+  if(txn){
+    var isRec=(x.r||0)>0&&(x.i||0)<=0;
+    var isIss=(x.i||0)>0&&(x.r||0)<=0;
+    var isBoth=(x.r||0)>0&&(x.i||0)>0;
+    var recTxn=txn==="receive inventory"||txn==="received from production"||txn==="service receive"||txn==="asset receive"||txn==="transfer in"||txn==="received from customer"||txn==="issue return";
+    var issTxn=txn==="issue inventory"||txn==="transfer out"||txn==="purchase return";
+    if(recTxn&&!isRec)return false;
+    if(issTxn&&!isIss)return false;
+    if(!recTxn&&!issTxn&&isBoth&&txn!=="all")return false;
+  }
+  return true;
+});
+}
+
 function kpis(){
 var bu=(FLT.bu||"").toLowerCase(),item=(FLT.item||"").toLowerCase();
-// Stock value from D (GL snapshot), filtered by BU + item
-var dF=D.filter(function(x){if(bu&&x.s.toLowerCase().indexOf(bu)<0)return false;if(item&&x.s.toLowerCase().indexOf(item)<0)return false;return true;});
+// Stock value from D (GL snapshot), filtered by BU + item + geo (plant/warehouse)
+var dF=D.filter(function(x){if(bu&&x.s.toLowerCase().indexOf(bu)<0)return false;if(item&&x.s.toLowerCase().indexOf(item)<0)return false;if(!geoOK(x.s))return false;return true;});
 var totalStock=dF.filter(function(x){return x.v>0}).reduce(function(s,x){return s+x.v},0);
-// Realtime boxes: prefer live WMS aggregates (SUM); fall back to TXN rows; TXN used for BU/plant/warehouse counts
-var tx=filteredTxn();
-var hasFilter=FLT.bu||FLT.wh||FLT.plant;
+// Receive / Issue / Qty / Txn from MOVEMENT (respects BU, plant, warehouse, item, txn type, date range)
+var hasF=FLT.bu||FLT.wh||FLT.plant||FLT.item||FLT.txn;
+var mv=filteredMovement();
 var rec,iss,qty,txnCount;
-if(hasFilter&&tx.length){
-  rec=tx.filter(function(x){return x[5]>0}).reduce(function(s,x){return s+x[5]},0);
-  iss=tx.filter(function(x){return x[5]<0}).reduce(function(s,x){return s+Math.abs(x[5])},0);
-  qty=tx.reduce(function(s,x){return s+Math.abs(x[3])},0);
-  txnCount=tx.length;
+if(mv.length){
+  rec=mv.reduce(function(s,x){return s+Number(x.r||0)},0);
+  iss=mv.reduce(function(s,x){return s+Number(x.i||0)},0);
+  qty=mv.reduce(function(s,x){return s+Math.abs(Number(x.n||0))},0);
+  txnCount=mv.length;
+} else if(hasF){
+  rec=0; iss=0; qty=0; txnCount=0;
 } else {
   rec=SUM.receiveValue||0; iss=Math.abs(SUM.issueValue||0); qty=SUM.totalQuantity||0; txnCount=SUM.transactions||0;
-  if(tx.length){ rec=rec||tx.filter(function(x){return x[5]>0}).reduce(function(s,x){return s+x[5]},0); iss=iss||tx.filter(function(x){return x[5]<0}).reduce(function(s,x){return s+Math.abs(x[5])},0); qty=qty||tx.reduce(function(s,x){return s+Math.abs(x[3])},0); txnCount=txnCount||tx.length; }
 }
 // Counts: full DWH register by default, filtered when a filter is selected
 var buF=(FLT.bu||""),whF=(FLT.wh||""),plantF=(FLT.plant||"");
@@ -626,14 +652,14 @@ WHP.forEach(function(x){
 });
 var whCount=Object.keys(whSet).length,plantCount=Object.keys(plantSet).length,buCount=Object.keys(buSet).length;
 document.getElementById("kpiStrip").innerHTML=
-'<div class="kpi t"><div class="lbl">Total Stock Value</div><div class="val" style="color:var(--theme-primary)">'+f(totalStock)+'</div><div class="sub">Positive stock</div></div>'+
-'<div class="kpi g"><div class="lbl">Total Receive Value</div><div class="val" style="color:var(--status-success)">'+f(rec)+'</div><div class="sub">WMS Inbound</div></div>'+
-'<div class="kpi o"><div class="lbl">Total Issues Value</div><div class="val" style="color:var(--status-critical)">'+f(iss)+'</div><div class="sub">WMS Outbound</div></div>'+
-'<div class="kpi b"><div class="lbl">Total Quantity</div><div class="val" style="color:var(--blue)">'+qty.toLocaleString(undefined,{maximumFractionDigits:0})+'</div><div class="sub">Units</div></div>'+
+'<div class="kpi t"><div class="lbl">Total Stock Value</div><div class="val" style="color:var(--theme-primary)">'+f(totalStock)+'</div><div class="sub">'+(hasF?'Filtered':'Positive stock')+'</div></div>'+
+'<div class="kpi g"><div class="lbl">Total Receive Value</div><div class="val" style="color:var(--status-success)">'+f(rec)+'</div><div class="sub">'+(hasF?'Filtered':'WMS Inbound')+'</div></div>'+
+'<div class="kpi o"><div class="lbl">Total Issues Value</div><div class="val" style="color:var(--status-critical)">'+f(iss)+'</div><div class="sub">'+(hasF?'Filtered':'WMS Outbound')+'</div></div>'+
+'<div class="kpi b"><div class="lbl">Total Quantity</div><div class="val" style="color:var(--blue)">'+qty.toLocaleString(undefined,{maximumFractionDigits:0})+'</div><div class="sub">'+(hasF?'Filtered units':'Units')+'</div></div>'+
 '<div class="kpi b"><div class="lbl">Business Unit</div><div class="val" style="color:var(--theme-primary-dark)">'+buCount.toLocaleString()+'</div><div class="sub">'+((buF||plantF||whF)?'Filtered':'From DWH')+'</div></div>'+
 '<div class="kpi p"><div class="lbl">Plant</div><div class="val" style="color:var(--purple)">'+plantCount.toLocaleString()+'</div><div class="sub">'+((plantF||buF)?'Filtered':'From DWH')+'</div></div>'+
 '<div class="kpi p"><div class="lbl">Warehouse</div><div class="val" style="color:var(--purple)">'+whCount.toLocaleString()+'</div><div class="sub">'+((whF||buF||plantF)?'Filtered':'From DWH')+'</div></div>'+
-'<div class="kpi t"><div class="lbl">Transaction</div><div class="val" style="color:var(--theme-primary)">'+txnCount.toLocaleString()+'</div><div class="sub">WMS records</div></div>';
+'<div class="kpi t"><div class="lbl">Transaction</div><div class="val" style="color:var(--theme-primary)">'+txnCount.toLocaleString()+'</div><div class="sub">'+(hasF?'Filtered records':'WMS records')+'</div></div>';
 }
 
 function render(preserveFilters){
