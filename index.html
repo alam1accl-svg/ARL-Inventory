@@ -670,7 +670,7 @@ if(CUR==="overview"||CUR==="inventory"){if(strip)strip.style.display="grid";kpis
 else{if(strip)strip.style.display="none";}
 var g="";
 if(CUR==="overview"){
-g+=renderFilters();g+=panelPeopleDeskKpis();g+=panelOverview();g+=panelStock();g+=panelPR();g+=panelAging();g+=panelTxn();g+=panelMovement();g+=panelAlerts();g+=panelDIOChart();g+=panelDataMart();
+g+=renderFilters();g+=panelOverview();g+=panelStock();g+=panelPR();g+=panelAging();g+=panelTxn();g+=panelMovement();g+=panelAlerts();g+=panelDIOChart();g+=panelDataMart();
 }
 if(CUR==="inventory"){g+=renderFilters();g+=panelInvReport();}
 if(CUR==="aging"){g+=renderFilters();g+=panelAging();}
