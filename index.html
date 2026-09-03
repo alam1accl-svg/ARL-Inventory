@@ -683,7 +683,7 @@ if(FLT.txn)fp.push('Txn Group: <b style="color:var(--theme-primary)">'+FLT.txn+'
 g+='<div class="card ft" style="margin-bottom:10px;border-left:4px solid var(--theme-primary)"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 14px"><div style="font-size:10.5px;color:var(--t2)">&#x1F50D; <b style="color:var(--theme-primary)">Active Filter:</b> '+fp.join(' &nbsp;|&nbsp; ')+'</div><button class="btn" onclick="clearFilters()" style="color:var(--status-error);border-color:var(--status-error)">&#x2715; Clear</button></div></div>';
 }
 if(CUR==="overview"){
-g+=renderFilters();g+=panelOverview();g+=panelStock();g+=panelPR();g+=panelAging();g+=panelTxn();g+=panelMovement();g+=panelAlerts();g+=panelDIOChart();g+=panelDataMart();
+g+=renderFilters();g+=panelOverview();g+=panelStock();g+=panelAging();g+=panelTxn();g+=panelMovement();g+=panelAlerts();g+=panelDIOChart();g+=panelDataMart();
 }
 if(CUR==="inventory"){g+=renderFilters();g+=panelInvReport();}
 if(CUR==="aging"){g+=renderFilters();g+=panelAging();}
