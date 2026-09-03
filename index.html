@@ -1079,23 +1079,6 @@ var nonMoveVal=rows.filter(function(x){return (x.ageDays||0)>180&&(x.ageDays||0)
 var obsVal=b365p;
 var wcAtRisk=agingVal;
 var h='';
-// ===== SECTION 2: AGING DISTRIBUTION =====
-var dist=[
- {b:"0-30",v:b30,c:rows.filter(function(x){return (x.ageDays||0)<=30;}).length},
- {b:"31-60",v:b60,c:rows.filter(function(x){return (x.ageDays||0)>30&&(x.ageDays||0)<=60;}).length},
- {b:"61-90",v:b90,c:rows.filter(function(x){return (x.ageDays||0)>60&&(x.ageDays||0)<=90;}).length},
- {b:"91-180",v:b180,c:rows.filter(function(x){return (x.ageDays||0)>90&&(x.ageDays||0)<=180;}).length},
- {b:"181-365",v:b365,c:rows.filter(function(x){return (x.ageDays||0)>180&&(x.ageDays||0)<=365;}).length},
- {b:">365",v:b365p,c:rows.filter(function(x){return (x.ageDays||0)>365;}).length}
-];
-h+='<div class="card ft"><div class="card-h"><h3>&#x1F4C8; Inventory Aging Distribution</h3><span style="font-size:9px;color:var(--t3)">Value by aging category | click a bar for SKU detail | '+agingSrcBadge()+'</span></div><div class="card-b"><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">';
-h+='<div class="chart-wrap" style="height:280px;background:var(--theme-card);border:1px solid var(--theme-border);border-radius:8px;padding:8px"><canvas id="chAgingDist"></canvas></div>';
-h+='<div class="scroll" style="max-height:280px;background:var(--theme-card);border:1px solid var(--theme-border);border-radius:8px;padding:6px"><table class="ad-table"><thead><tr><th>Category</th><th>Value</th><th>Qty</th><th>SKUs</th><th>% Total</th></tr></thead><tbody>';
-dist.forEach(function(d){
-var q=rows.filter(function(x){return (x.agingBucket||agingBucketOf(x.ageDays))===d.b;}).reduce(function(s,x){return s+Math.abs(x.quantity||0)},0);
-h+='<tr><td style="font-weight:600;color:var(--t1)">'+d.b+' days</td><td>'+f(d.v)+'</td><td>'+Math.round(q).toLocaleString()+'</td><td>'+d.c+'</td><td>'+agingPct(d.v,totalVal)+'</td></tr>';
-});
-h+='</tbody></table></div>'+agingActionBtn('distribution')+'</div></div></div>';
 // ===== SECTION 3: AGING RISK CONCENTRATION (SBU) =====
 var sbuMap={};
 rows.forEach(function(x){var s=x.sbu||"Unknown";if(!sbuMap[s])sbuMap[s]={tot:0,aging:0,ageSum:0};sbuMap[s].tot+=Math.abs(x.stockValue||0);if((x.ageDays||0)>90)sbuMap[s].aging+=Math.abs(x.stockValue||0);sbuMap[s].ageSum+=Math.abs(x.stockValue||0)*(x.ageDays||0);});
