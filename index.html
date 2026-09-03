@@ -673,6 +673,15 @@ var strip=document.getElementById("kpiStrip");
 if(CUR==="overview"||CUR==="inventory"){if(strip)strip.style.display="grid";kpis();}
 else{if(strip)strip.style.display="none";}
 var g="";
+if(FLT.bu||FLT.wh||FLT.plant||FLT.item||FLT.txn){
+var fp=[];
+if(FLT.bu)fp.push('Business Unit: <b style="color:var(--theme-primary)">'+FLT.bu+'</b>');
+if(FLT.plant)fp.push('Plant: <b style="color:var(--theme-primary)">'+FLT.plant+'</b>');
+if(FLT.wh)fp.push('Warehouse: <b style="color:var(--theme-primary)">'+FLT.wh+'</b>');
+if(FLT.item)fp.push('Item: <b style="color:var(--theme-primary)">'+FLT.item+'</b>');
+if(FLT.txn)fp.push('Txn Group: <b style="color:var(--theme-primary)">'+FLT.txn+'</b>');
+g+='<div class="card ft" style="margin-bottom:10px;border-left:4px solid var(--theme-primary)"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 14px"><div style="font-size:10.5px;color:var(--t2)">&#x1F50D; <b style="color:var(--theme-primary)">Active Filter:</b> '+fp.join(' &nbsp;|&nbsp; ')+'</div><button class="btn" onclick="clearFilters()" style="color:var(--status-error);border-color:var(--status-error)">&#x2715; Clear</button></div></div>';
+}
 if(CUR==="overview"){
 g+=renderFilters();g+=panelOverview();g+=panelStock();g+=panelPR();g+=panelAging();g+=panelTxn();g+=panelMovement();g+=panelAlerts();g+=panelDIOChart();g+=panelDataMart();
 }
@@ -792,6 +801,11 @@ if(x.wh&&!seen[x.wh]){seen[x.wh]=1;names.push(x.wh);}
 });
 names.sort(function(a,b){var x=a.toLowerCase(),y=b.toLowerCase();return x<y?-1:x>y?1:0;});
 return names;
+}
+
+function clearFilters(){
+FLT.from=todayStr();FLT.to=todayStr();FLT.bu="";FLT.wh="";FLT.plant="";FLT.txn="";FLT.item="";FLT.gran="daily";
+render(true);
 }
 
 function updateFilters(){
