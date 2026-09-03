@@ -1061,22 +1061,6 @@ var nonMoveVal=rows.filter(function(x){return (x.ageDays||0)>180&&(x.ageDays||0)
 var obsVal=b365p;
 var wcAtRisk=agingVal;
 var h='';
-// ===== HEADER =====
-h+='<div class="card ft" style="box-shadow:0 2px 10px rgba(0,0,0,0.05)"><div class="card-h"><h3 style="font-weight:800;color:var(--theme-primary-dark)">&#x23F3; Inventory Aging &amp; Risk Intelligence</h3><span style="font-size:9px;color:var(--t3)">Real DWH data (wms.tblItemPlantWarehouseArc + itm.tblItemArc) | '+rows.length.toLocaleString()+' items | '+fltCtx()+' | <button class="btn btn-refresh" onclick="loadAgingData(function(){render(true);})">&#x21BB; Refresh</button> <button class="btn" onclick="agingExportCSV()">&#x1F4E5; Excel</button> <button class="btn" onclick="window.print()">&#x1F5A8; Print</button></span></div><div class="card-b"><div style="font-size:10px;color:var(--t3);padding:2px 0 8px">Story: Inventory Status &#x2192; Aging Exposure &#x2192; Risk Concentration &#x2192; Root Cause &#x2192; Financial Impact &#x2192; Recommended Action</div></div></div>';
-// ===== SECTION 1: EXECUTIVE KPI SUMMARY =====
-var kpis=[
- {l:"Total Inventory Value",v:f(totalVal),s:"All items",cls:"t",on:"agingDrill('total')"},
- {l:"Healthy Inventory",v:f(healthyVal),s:agingPct(healthyVal,totalVal),cls:"g",on:"agingDrill('healthy')"},
- {l:"Aging Inventory",v:f(agingVal),s:agingPct(agingVal,totalVal),cls:"o",on:"agingDrill('aging')"},
- {l:"Slow Moving",v:f(slowVal),s:agingPct(slowVal,totalVal),cls:"o",on:"agingDrill('slow')"},
- {l:"Non-Moving",v:f(nonMoveVal),s:agingPct(nonMoveVal,totalVal),cls:"ao",on:"agingDrill('nonmove')"},
- {l:"Obsolete (365+)",v:f(obsVal),s:agingPct(obsVal,totalVal),cls:"r",on:"agingDrill('obsolete')"},
- {l:"Aging Risk %",v:agingPct(agingVal,totalVal),s:"of total value",cls:"o",on:"agingDrill('risk')"},
- {l:"Working Capital at Risk",v:f(wcAtRisk),s:agingPct(wcAtRisk,totalVal),cls:"r",on:"agingDrill('wc')"}
-];
-h+='<div class="kpi-strip" style="gap:8px">';
-kpis.forEach(function(k){h+='<div class="kpi '+k.cls+'" style="cursor:pointer" onclick="'+k.on+'" title="Click for detail"><div class="lbl">'+k.l+'</div><div class="val">'+k.v+'</div><div class="sub">'+k.s+'</div></div>';});
-h+='</div>';
 // ===== SECTION 2: AGING DISTRIBUTION =====
 var dist=[
  {b:"0-30",v:b30,c:rows.filter(function(x){return (x.ageDays||0)<=30;}).length},
