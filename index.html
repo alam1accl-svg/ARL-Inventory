@@ -1888,8 +1888,8 @@ return h;
 }
 
 function panelTxn(){
-var tx=filteredTxn();
-var h='<div class="card ft"><div class="card-h"><h3>&#x1F504; All Business Unit Realtime Inventory Transactions</h3><span style="font-size:9px;color:var(--t3)">Source: WMS tblInventoryTransactionHeaderArc + RowArc | '+tx.length+' rows (filtered)</span></div><div class="card-b"><div class="scroll" style="max-height:420px"><table><thead><tr><th>Date</th><th>Item Code</th><th>Item Name</th><th>Qty</th><th>UoM</th><th>Value (BDT)</th><th>Txn Type</th><th>Business Unit</th><th>Warehouse Name</th><th>Plant Name</th></tr></thead><tbody id="txnBody">';
+var tx=filteredTxn().slice(0,15);
+var h='<div class="card ft"><div class="card-h"><h3>&#x1F504; Business Unit Realtime Inventory Transaction</h3><span style="font-size:9px;color:var(--t3)">Source: WMS tblInventoryTransactionHeaderArc + RowArc | '+tx.length+' rows (filtered)</span></div><div class="card-b"><div class="scroll" style="max-height:420px"><table><thead><tr><th>Date</th><th>Item Code</th><th>Item Name</th><th>Qty</th><th>UoM</th><th>Value (BDT)</th><th>Txn Type</th><th>Business Unit</th><th>Warehouse Name</th><th>Plant Name</th></tr></thead><tbody id="txnBody">';
 tx.forEach(function(x){
 var isRec=x[6].indexOf("Receive")>=0||x[6].indexOf("Received")>=0||x[6].indexOf("Transfer In")>=0||x[6].indexOf("Return")>=0;
 var isIss=x[6].indexOf("Issue")>=0||x[6].indexOf("Transfer Out")>=0;
@@ -1904,7 +1904,7 @@ return h;
 function txnFilter(){
 var body=document.getElementById("txnBody");
 if(!body)return;
-var tx=filteredTxn();
+var tx=filteredTxn().slice(0,15);
 var html="";
 tx.forEach(function(x){
 var isRec=x[6].indexOf("Receive")>=0||x[6].indexOf("Received")>=0||x[6].indexOf("Transfer In")>=0||x[6].indexOf("Return")>=0;
