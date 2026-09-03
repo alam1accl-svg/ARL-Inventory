@@ -1167,8 +1167,6 @@ acts.forEach(function(a){
 h+='<div class="alert '+a.cls+'" style="cursor:pointer" onclick="agingDrill(&#39;action&#39;)" title="Click for detail"><span>'+a.icon+'</span><div><b>'+a.p+':</b> '+f(a.v)+' | Priority: <b>'+a.pr+'</b><br><span style="font-size:8px;color:var(--t3)">Action: '+a.a+' | &#x1F50D; detail</span></div></div>';
 });
 h+='</div></div>';
-// ===== SECTION 10: AGING TREND =====
-h+='<div class="card ft"><div class="card-h"><h3>&#x1F4C8; Aging Trend (Month-over-Month)</h3><span style="font-size:9px;color:var(--t3)">Slow / Non-moving / Obsolete by last-move month (no background lines) | '+agingSrcBadge('trend')+'</span></div><div class="card-b"><div class="chart-wrap" style="height:280px;background:var(--theme-card);border:1px solid var(--theme-border);border-radius:8px;padding:8px"><canvas id="chAgingTrend"></canvas></div>'+agingActionBtn('trend')+'</div></div>';
 // ===== SECTION 11: EARLY WARNING INDICATOR =====
 var earlyRisk=rows.filter(function(x){return (x.ageDays||0)>60&&(x.ageDays||0)<=120;}).reduce(function(s,x){return s+Math.abs(x.stockValue||0)},0);
 var earlyHigh=rows.filter(function(x){return (x.ageDays||0)>60&&(x.ageDays||0)<=120&&Math.abs(x.stockValue||0)>10000000;}).length;
