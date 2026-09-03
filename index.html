@@ -443,6 +443,10 @@ if(d.movement&&d.movement.length){MOVEMENT=d.movement}
 if(d.inventoryItems&&d.inventoryItems.length){AGING_ITEMS=d.inventoryItems}
 if(d.peopleDesk&&typeof d.peopleDesk==="object"){PEOPLEDESK=d.peopleDesk}
 if(d.summary){SUM=d.summary}
+var _act={};
+D.forEach(function(x){if(x.s)_act[x.s]=1;});
+WHP.forEach(function(x){if(x.bu)_act[x.bu]=1;});
+if(Object.keys(_act).length){BUS=BUS.filter(function(x){return _act[x];});}
 }
 function loadMovement(){
 fetch("/api/movement",{cache:"no-store"}).then(function(r){
